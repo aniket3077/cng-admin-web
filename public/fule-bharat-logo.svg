@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 800">
+  <!-- Map background with colored lines -->
+  <path d="M100 650 Q250 580 400 680 Q550 780 650 650" stroke="#0EA5E9" stroke-width="20" fill="none" opacity="0.6"/>
+  <path d="M50 550 Q300 450 500 550 Q650 650 680 500" stroke="#FBBF24" stroke-width="15" fill="none" opacity="0.6"/>
+  <path d="M120 700 Q350 650 550 700 Q620 720 680 680" stroke="#10B981" stroke-width="15" fill="none" opacity="0.6"/>
+  
+  <!-- Location Pin -->
+  <path d="M350 50 C200 50 80 180 80 350 C80 580 350 750 350 750 C350 750 620 580 620 350 C620 180 500 50 350 50" fill="#EF4444"/>
+  
+  <!-- White circle inside pin -->
+  <circle cx="350" cy="300" r="180" fill="white"/>
+  
+  <!-- CNG Pump -->
+  <rect x="270" y="220" width="100" height="160" rx="8" fill="#22C55E"/>
+  <text x="280" y="310" font-size="50" fill="white" font-weight="bold" font-family="Arial">CNG</text>
+  
+  <!-- Fuel dispenser -->
+  <path d="M370 240 L450 180 L450 420 L370 360 Z" fill="#3B82F6"/>
+  
+  <!-- Fuel drop -->
+  <circle cx="450" cy="180" r="30" fill="#F59E0B"/>
+  
+  <!-- Available Time Badge -->
+  <rect x="180" y="500" width="340" height="80" rx="15" fill="#EF4444"/>
+  <text x="350" y="545" font-size="35" fill="white" font-weight="bold" font-family="Arial" text-anchor="middle">AVAILABLE</text>
+  <text x="350" y="580" font-size="35" fill="white" font-weight="bold" font-family="Arial" text-anchor="middle">TIME ON-OFF</text>
+  
+  <!-- EV Charging Station badge (top left) -->
+  <rect x="30" y="30" width="130" height="130" rx="10" fill="#22C55E" stroke="white" stroke-width="5"/>
+  <text x="95" y="70" font-size="24" fill="white" font-weight="bold" font-family="Arial" text-anchor="middle">EV CHARGING</text>
+  <text x="95" y="95" font-size="24" fill="white" font-weight="bold" font-family="Arial" text-anchor="middle">STATION</text>
+  
+  <!-- EV Charging icon -->
+  <path d="M75 105 L75 125 L65 125 L95 145 L85 125 L95 125 L85 105 Z" fill="white"/>
+  <circle cx="110" cy="118" r="8" fill="white"/>
+</svg>

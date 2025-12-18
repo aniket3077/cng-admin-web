@@ -20,8 +20,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('adminToken');
-      window.location.href = '/login';
+      const userType = localStorage.getItem('userType');
+      // Only clear token and redirect if user is admin
+      // Subscribers may get 401 on admin-only endpoints but should stay logged in
+      if (userType === 'admin') {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('userType');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -177,6 +183,43 @@ export const adminApi = {
     return response.data;
   },
 
+  logout: async () => {
+    try {
+      await api.post('/admin/logout');
+    } finally {
+      localStorage.removeItem('adminToken');
+    }
+  },
+
+  signup: async (data: { 
+    name: string; 
+    email: string; 
+    phone: string; 
+    password: string; 
+    stationName?: string; 
+    address?: string; 
+    city?: string; 
+    state?: string; 
+    lat?: number; 
+    lng?: number; 
+    companyName?: string;
+  }) => {
+    const response = await axios.post(`${API_BASE_URL}/auth/subscriber/signup`, {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      companyName: data.stationName || data.companyName,
+      stationName: data.stationName,
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      lat: data.lat,
+      lng: data.lng,
+    });
+    return response.data;
+  },
+
   // Station Management
   getStations: async (page = 1, search = '', verified?: boolean, approvalStatus?: string) => {
     const params: any = { page };
@@ -215,7 +258,7 @@ export const adminApi = {
     return response.data;
   },
 
-  updateOwner: async (id: string, data: { status?: string; kycStatus?: string; kycRejectionReason?: string; emailVerified?: boolean; phoneVerified?: boolean }) => {
+  updateOwner: async (id: string, data: { status?: string; kycStatus?: string; kycRejectionReason?: string; emailVerified?: boolean; phoneVerified?: boolean; subscriptionType?: string; subscriptionEnd?: Date }) => {
     const response = await api.put(`/admin/owners?id=${id}`, data);
     return response.data;
   },
@@ -238,7 +281,7 @@ export const adminApi = {
   },
 
   addTicketReply: async (ticketId: string, message: string, isInternal: boolean = false) => {
-    const response = await api.post('/admin/support/reply', { ticketId, message, isInternal });
+    const response = await api.post('/admin/support', { ticketId, message, isInternal });
     return response.data;
   },
 

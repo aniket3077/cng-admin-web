@@ -1,68 +1,193 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { adminApi, Station } from '../services/api';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
+import { adminApi, Station } from '../services/api';
 
 export default function EditStation() {
-  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [station, setStation] = useState<Station | null>(null);
-
+  const { id } = useParams<{ id: string }>();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
     city: '',
     state: '',
     postalCode: '',
-    phone: '',
-    latitude: '',
-    longitude: '',
+    lat: '',
+    lng: '',
     fuelTypes: [] as string[],
-    openingHours: '',
-    amenities: '',
+    phone: '',
+    openingHours: '24/7',
+    amenities: [] as string[],
+    isPartner: false,
+    isVerified: false,
+    subscriptionType: 'free' as 'free' | 'basic' | 'premium',
   });
 
-  const fuelOptions = ['Petrol', 'Diesel', 'CNG', 'LPG', 'EV'];
+  const fuelTypeOptions = ['Petrol', 'Diesel', 'CNG', 'EV Charging'];
+  const amenityOptions = ['Restroom', 'ATM', 'Air', 'Food Court', 'Car Wash', 'Convenience Store'];
 
   useEffect(() => {
-    loadStation();
+    if (id) {
+      fetchStation();
+    }
   }, [id]);
 
-  const loadStation = async () => {
+  const fetchStation = async () => {
     try {
-      const data = await adminApi.getStations(1, '', undefined);
-      const found = data.stations.find((s: Station) => s.id === id);
-      if (found) {
-        setStation(found);
+      setLoading(true);
+      const response = await adminApi.getStations(1, '', undefined, undefined);
+      const station = response.stations.find((s: Station) => s.id === id);
+      
+      if (station) {
         setFormData({
-          name: found.name,
-          address: found.address,
-          city: found.city,
-          state: found.state,
-          postalCode: found.postalCode || '',
-          phone: found.phone || '',
-          latitude: found.lat.toString(),
-          longitude: found.lng.toString(),
-          fuelTypes: found.fuelTypes.split(','),
-          openingHours: found.openingHours || '',
-          amenities: found.amenities || '',
+          name: station.name,
+          address: station.address,
+          city: station.city,
+          state: station.state,
+          postalCode: station.postalCode || '',
+          lat: station.lat.toString(),
+          lng: station.lng.toString(),
+          fuelTypes: station.fuelTypes?.split(',').map((f: string) => f.trim()) || [],
+          phone: station.phone || '',
+          openingHours: station.openingHours || '24/7',
+          amenities: station.amenities?.split(',').map((a: string) => a.trim()) || [],
+          isPartner: false, // station.isPartner - if available
+          isVerified: station.isVerified || false,
+          subscriptionType: (station.subscriptionType as 'free' | 'basic' | 'premium') || 'free',
         });
+      } else {
+        alert('Station not found');
+        navigate('/dashboard');
       }
     } catch (error) {
-      console.error('Failed to load station:', error);
+      console.error('Error fetching station:', error);
+      alert('Failed to load station');
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleFuelToggle = (fuel: string) => {
-    setFormData({
-      ...formData,
-      fuelTypes: formData.fuelTypes.includes(fuel)
-        ? formData.fuelTypes.filter((f) => f !== fuel)
-        : [...formData.fuelTypes, fuel],
-    });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
+
+  const handleFuelTypeToggle = (fuelType: string) => {
+    setFormData(prev => ({
+      ...prev,
+      fuelTypes: prev.fuelTypes.includes(fuelType)
+        ? prev.fuelTypes.filter(f => f !== fuelType)
+        : [...prev.fuelTypes, fuelType]
+    }));
+  };
+
+  const handleAmenityToggle = (amenity: string) => {
+    setFormData(prev => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter(a => a !== amenity)
+        : [...prev.amenities, amenity]
+    }));
+  };
+
+  const handleGeocode = async () => {
+    if (!formData.address || !formData.city || !formData.state) {
+      alert('Please enter address, city, and state first');
+      return;
+    }
+    
+    try {
+      const fullAddress = `${formData.address}, ${formData.city}, ${formData.state}, India`;
+      const result = await adminApi.geocode(fullAddress);
+      
+      if (result.results && result.results.length > 0) {
+        const location = result.results[0].geometry.location;
+        setFormData(prev => ({
+          ...prev,
+          lat: location.lat.toString(),
+          lng: location.lng.toString()
+        }));
+      } else {
+        alert('Could not find coordinates for this address');
+      }
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      alert('Failed to get coordinates. Please enter manually.');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!id) return;
+
+    if (!formData.name || !formData.address || !formData.city || !formData.state) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    if (formData.fuelTypes.length === 0) {
+      alert('Please select at least one fuel type');
+      return;
+    }
+
+    if (!formData.lat || !formData.lng) {
+      alert('Please enter or geocode the coordinates');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      await adminApi.updateStation(id, {
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.postalCode || undefined,
+        lat: parseFloat(formData.lat),
+        lng: parseFloat(formData.lng),
+        fuelTypes: formData.fuelTypes.join(','),
+        phone: formData.phone || undefined,
+        openingHours: formData.openingHours || undefined,
+        amenities: formData.amenities.length > 0 ? formData.amenities.join(',') : undefined,
+        isPartner: formData.isPartner,
+        isVerified: formData.isVerified,
+        subscriptionType: formData.subscriptionType,
+      });
+
+      alert('Station updated successfully!');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error updating station:', error);
+      alert('Failed to update station. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    if (!confirm('Are you sure you want to delete this station? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await adminApi.deleteStation(id);
+      alert('Station deleted successfully');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error deleting station:', error);
+      alert('Failed to delete station');
+    }
   };
 
   const handleLogout = () => {
@@ -70,252 +195,334 @@ export default function EditStation() {
     navigate('/login');
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (formData.fuelTypes.length === 0) {
-      setError('Please select at least one fuel type');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await adminApi.updateStation(id!, {
-        name: formData.name,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        postalCode: formData.postalCode,
-        phone: formData.phone || undefined,
-        lat: parseFloat(formData.latitude),
-        lng: parseFloat(formData.longitude),
-        fuelTypes: formData.fuelTypes.join(','),
-        openingHours: formData.openingHours || undefined,
-        amenities: formData.amenities || undefined,
-      });
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update station');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!station) {
+  if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-50">
         <Sidebar onLogout={handleLogout} />
-        <div className="flex-1 ml-64 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading station...</p>
-          </div>
+        <div className="flex-1 flex flex-col ml-64">
+          <TopBar />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
+          </main>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar onLogout={handleLogout} />
       
-      <div className="flex-1 ml-64">
+      <div className="flex-1 flex flex-col ml-64">
         <TopBar />
-        <main className="max-w-4xl mx-auto px-6 py-8">
-          {/* Page Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                ← Back
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Edit Station</h1>
-                <p className="text-gray-600 mt-1">Update station details for {formData.name}</p>
-              </div>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-8 space-y-6 shadow-sm">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-                {error}
-              </div>
-            )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Station Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Address *
-              </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                City *
-              </label>
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                State *
-              </label>
-              <input
-                type="text"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Postal Code
-              </label>
-              <input
-                type="text"
-                value={formData.postalCode}
-                onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Latitude *
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.latitude}
-                onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Longitude *
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.longitude}
-                onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Fuel Types *
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {fuelOptions.map((fuel) => (
+        
+        <main className="flex-1 overflow-y-auto p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
                 <button
-                  key={fuel}
-                  type="button"
-                  onClick={() => handleFuelToggle(fuel)}
-                  className={`px-4 py-2 rounded-xl border-2 transition-all font-medium ${
-                    formData.fuelTypes.includes(fuel)
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-gray-900/50 text-gray-300 border-gray-700 hover:border-blue-400'
-                  }`}
+                  onClick={() => navigate('/dashboard')}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  aria-label="Go back to dashboard"
                 >
-                  {fuel}
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
                 </button>
-              ))}
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Edit Station</h1>
+                  <p className="text-gray-600">Update station information</p>
+                </div>
+              </div>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
+              >
+                <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete Station
+              </button>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Opening Hours
-            </label>
-            <input
-              type="text"
-              value={formData.openingHours}
-              onChange={(e) => setFormData({ ...formData, openingHours: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="max-w-4xl">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+              {/* Basic Info */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Station Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="e.g., HP Petrol Pump"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="Street address"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      City <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      placeholder="City"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      State <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      placeholder="State"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      value={formData.postalCode}
+                      onChange={handleInputChange}
+                      placeholder="Postal code"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Contact number"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Amenities
-            </label>
-            <input
-              type="text"
-              value={formData.amenities}
-              onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
+              {/* Location */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Location Coordinates</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Latitude <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="lat"
+                      value={formData.lat}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 28.6139"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Longitude <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      name="lng"
+                      value={formData.lng}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 77.2090"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={handleGeocode}
+                      className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                    >
+                      <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Get from Address
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="flex-1 px-6 py-3 border border-gray-700 rounded-xl text-gray-300 hover:bg-gray-700/50 transition-all font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all font-medium shadow-lg shadow-blue-500/25"
-            >
-              {loading ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
-      </main>
+              {/* Fuel Types */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Fuel Types <span className="text-red-500">*</span>
+                </h2>
+                <div className="flex flex-wrap gap-3">
+                  {fuelTypeOptions.map(fuel => (
+                    <button
+                      key={fuel}
+                      type="button"
+                      onClick={() => handleFuelTypeToggle(fuel)}
+                      className={`px-4 py-2 rounded-lg border transition-colors ${
+                        formData.fuelTypes.includes(fuel)
+                          ? 'bg-sky-600 text-white border-sky-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-sky-500'
+                      }`}
+                    >
+                      {fuel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Amenities */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Amenities</h2>
+                <div className="flex flex-wrap gap-3">
+                  {amenityOptions.map(amenity => (
+                    <button
+                      key={amenity}
+                      type="button"
+                      onClick={() => handleAmenityToggle(amenity)}
+                      className={`px-4 py-2 rounded-lg border transition-colors ${
+                        formData.amenities.includes(amenity)
+                          ? 'bg-green-600 text-white border-green-600'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-green-500'
+                      }`}
+                    >
+                      {amenity}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Business Details */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Business Details</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="editOpeningHours" className="block text-sm font-medium text-gray-700 mb-2">Opening Hours</label>
+                    <select
+                      id="editOpeningHours"
+                      name="openingHours"
+                      value={formData.openingHours}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    >
+                      <option value="24/7">24/7</option>
+                      <option value="6AM-10PM">6 AM - 10 PM</option>
+                      <option value="6AM-12AM">6 AM - 12 AM</option>
+                      <option value="8AM-8PM">8 AM - 8 PM</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="editSubscriptionType" className="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
+                    <select
+                      id="editSubscriptionType"
+                      name="subscriptionType"
+                      value={formData.subscriptionType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    >
+                      <option value="free">Free</option>
+                      <option value="basic">Basic</option>
+                      <option value="premium">Premium</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-6 space-y-4">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isPartner"
+                      checked={formData.isPartner}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                    />
+                    <span className="ml-3 text-sm font-medium text-gray-700">
+                      Partner Station (gets priority listing)
+                    </span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isVerified"
+                      checked={formData.isVerified}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="ml-3 text-sm font-medium text-gray-700">
+                      Verified Station (shows verified badge)
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+        </main>
       </div>
     </div>
   );

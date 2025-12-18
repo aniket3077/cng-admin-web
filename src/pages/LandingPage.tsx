@@ -1,206 +1,173 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
 
 export default function LandingPage() {
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  const slides = [
+  const features = [
     {
-      title: 'NO MATTER WHAT THE ENERGY NEED',
-      subtitle: 'WE HAVE THE END TO END SOLUTION',
-      description: 'All Purpose Fuel Solutions',
-      image: 'https://images.unsplash.com/photo-1545262810-77515befe149?w=1200&q=80'
+      title: 'Station Management',
+      description: 'Complete CRM system to manage your fuel station operations, inventory, and staff efficiently.'
     },
     {
-      title: 'FIND FUEL STATIONS',
-      subtitle: 'ANYTIME, ANYWHERE',
-      description: 'Smart Navigation & Real-time Updates',
-      image: 'https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=1200&q=80'
+      title: 'Owner Dashboard',
+      description: 'Real-time analytics, revenue tracking, and performance insights for station owners.'
     },
     {
-      title: 'POWERING YOUR JOURNEY',
-      subtitle: 'WITH RELIABLE ENERGY',
-      description: 'Petrol, Diesel, CNG, LPG & EV Charging',
-      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80'
+      title: 'Customer Support',
+      description: 'Integrated ticketing system to handle customer queries and support requests seamlessly.'
+    },
+    {
+      title: 'Multi-Station Support',
+      description: 'Manage multiple fuel stations from a single dashboard with role-based access control.'
     }
   ];
 
-  const services = [
-    {
-      icon: '⛽',
-      title: 'Petrol & Diesel',
-      description: 'Premium quality fuel at competitive prices'
-    },
-    {
-      icon: '🔥',
-      title: 'CNG & LPG',
-      description: 'Clean energy solutions for homes and vehicles'
-    },
-    {
-      icon: '⚡',
-      title: 'EV Charging',
-      description: 'Fast charging stations for electric vehicles'
-    },
-    {
-      icon: '🏪',
-      title: 'Station Network',
-      description: '500+ stations across India'
-    }
+  const howItWorks = [
+    { step: '1', title: 'Sign Up', description: 'Create your station owner account in minutes' },
+    { step: '2', title: 'Add Stations', description: 'Register your CNG/fuel stations with details' },
+    { step: '3', title: 'Get Verified', description: 'Complete KYC and get admin approval' },
+    { step: '4', title: 'Go Live', description: 'Start managing operations and tracking analytics' }
   ];
 
-  const stats = [
-    { value: '500+', label: 'Fuel Stations' },
-    { value: '50K+', label: 'Happy Customers' },
-    { value: '100K+', label: 'Daily Transactions' },
-    { value: '24/7', label: 'Customer Support' }
+  const pricingPlans = [
+    {
+      name: 'Free',
+      price: '₹0',
+      period: '/month',
+      features: ['1 Station', 'Basic Dashboard', 'Email Support', '7-day Data History'],
+      cta: 'Get Started',
+      popular: false
+    },
+    {
+      name: 'Basic',
+      price: '₹29',
+      period: '/month',
+      features: ['Up to 3 Stations', 'Advanced Analytics', 'Priority Support', '30-day Data History', 'Custom Reports'],
+      cta: 'Start Free Trial',
+      popular: true
+    },
+    {
+      name: 'Premium',
+      price: '₹49',
+      period: '/month',
+      features: ['Unlimited Stations', 'Full Analytics Suite', '24/7 Priority Support', 'Unlimited Data History', 'API Access', 'Dedicated Account Manager'],
+      cta: 'Contact Sales',
+      popular: false
+    }
   ];
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top Bar */}
-      <div className="bg-blue-900 text-white py-2 px-4 text-sm">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex gap-4">
-            <span>📞 Customer Care: 1906</span>
-            <span>📧 support@fuelbharat.com</span>
-          </div>
-          <div className="flex gap-4 items-center">
-            <span className="text-xs">Follow us:</span>
-            <div className="flex gap-2">
-              <span className="cursor-pointer hover:text-blue-300">📘</span>
-              <span className="cursor-pointer hover:text-blue-300">📷</span>
-              <span className="cursor-pointer hover:text-blue-300">🔗</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Navbar */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
+      <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-sky-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">FB</span>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-600">Fuel Bharat</div>
-                  <div className="text-xs text-gray-500">Your Friendly Fuel Partner</div>
-                </div>
-              </div>
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/WhatsApp%20Image%202025-12-10%20at%2016.41.29_8d5288d7.jpg" 
+                alt="Fule Bharat Logo" 
+                className="h-12 w-auto object-contain"
+              />
+              <span className="text-2xl font-black tracking-wide text-gray-900">FULE BHARAT</span>
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="text-gray-700 hover:text-blue-600 font-medium">Home</a>
-              <a href="#about" className="text-gray-700 hover:text-blue-600 font-medium">About Us</a>
-              <a href="#services" className="text-gray-700 hover:text-blue-600 font-medium">Services</a>
-              <a href="#network" className="text-gray-700 hover:text-blue-600 font-medium">Our Network</a>
-              <a href="#contact" className="text-gray-700 hover:text-blue-600 font-medium">Contact</a>
+              <a href="#features" className="text-gray-700 hover:text-sky-600 font-medium transition">Features</a>
+              <a href="#how-it-works" className="text-gray-700 hover:text-sky-600 font-medium transition">How It Works</a>
+              <a href="#pricing" className="text-gray-700 hover:text-sky-600 font-medium transition">Pricing</a>
+              <a href="#contact" className="text-gray-700 hover:text-sky-600 font-medium transition">Contact</a>
             </div>
 
-            <Link
-              to="/login"
-              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2.5 rounded-full hover:from-orange-600 hover:to-orange-700 transition-all font-semibold shadow-lg"
-            >
-              Admin Login
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/login"
+                className="text-gray-700 hover:text-sky-600 font-medium transition"
+              >
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-6 py-2 rounded-lg hover:from-sky-600 hover:to-sky-700 transition-all font-semibold shadow-md"
+              >
+                Get Started
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Slider */}
-      <section id="home" className="relative h-[600px] bg-gradient-to-r from-blue-900 to-blue-700 overflow-hidden">
-        <div className="absolute inset-0">
-          <img 
-            src={slides[activeSlide].image}
-            alt="Hero"
-            className="w-full h-full object-cover opacity-40"
-          />
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="text-white max-w-3xl">
-            <div className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-white">NO MATTER WHAT THE</span>
-              <div className="bg-red-600 inline-block px-6 py-2 mt-4">
-                <span className="text-white">ENERGY</span>
-              </div>
+      {/* Hero Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-sky-50 to-cyan-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Hero Logo */}
+            <div className="mb-8 flex justify-center">
+              <img 
+                src="/WhatsApp%20Image%202025-12-10%20at%2016.41.29_8d5288d7.jpg" 
+                alt="Fule Bharat Logo" 
+                className="w-48 h-48 object-contain drop-shadow-2xl"
+              />
             </div>
-            <div className="text-5xl md:text-6xl font-bold mb-8">
-              NEED, WE HAVE<br />
-              THE END TO END
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              Manage Your CNG Stations with
+              <span className="block mt-2 bg-gradient-to-r from-sky-500 to-cyan-500 bg-clip-text text-transparent">
+                Fule Bharat Platform
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+              Complete management solution for CNG and fuel station owners. Track operations, manage staff, handle support tickets, and grow your business with powerful analytics.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/signup"
+                className="inline-flex items-center justify-center bg-gradient-to-r from-sky-500 to-sky-600 text-white px-8 py-4 rounded-lg hover:from-sky-600 hover:to-sky-700 transition-all font-semibold shadow-lg text-lg"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Start Free Trial
+              </Link>
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center justify-center bg-white text-gray-700 px-8 py-4 rounded-lg hover:bg-sky-50 transition-all font-semibold border-2 border-sky-200 text-lg"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Watch Demo
+              </a>
             </div>
-            <div className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-              SOLUTION
-            </div>
-            <p className="text-xl mt-6 text-blue-100">{slides[activeSlide].description}</p>
-          </div>
-
-          {/* Fuel Cylinders Visual */}
-          <div className="hidden lg:flex absolute right-20 bottom-10 items-end space-x-4">
-            <div className="w-24 h-32 bg-gradient-to-b from-blue-600 to-blue-800 rounded-t-full rounded-b-lg shadow-2xl"></div>
-            <div className="w-24 h-40 bg-gradient-to-b from-blue-600 to-blue-800 rounded-t-full rounded-b-lg shadow-2xl"></div>
-            <div className="w-32 h-48 bg-gradient-to-b from-white to-gray-200 rounded-t-full rounded-b-lg shadow-2xl border-4 border-blue-600"></div>
-            <div className="w-24 h-36 bg-gradient-to-b from-red-600 to-red-800 rounded-t-full rounded-b-lg shadow-2xl"></div>
-            <div className="w-20 h-28 bg-gradient-to-b from-red-600 to-red-800 rounded-t-full rounded-b-lg shadow-2xl"></div>
-          </div>
-        </div>
-
-        {/* Slider Controls */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                activeSlide === index ? 'bg-white w-8' : 'bg-white/50'
-              }`}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-5xl font-bold text-blue-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* Features Section */}
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Our <span className="text-blue-600">Services</span>
+              Powerful Features for Station Owners
             </h2>
             <p className="text-xl text-gray-600">
-              Comprehensive fuel solutions for all your needs
+              Everything you need to manage and grow your fuel station business
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {services.map((service, index) => (
+            {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 border border-blue-100"
+                className="bg-white p-6 rounded-xl border-2 border-sky-100 hover:border-sky-500 hover:shadow-xl transition-all"
               >
-                <div className="text-6xl mb-4">{service.icon}</div>
+                <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-cyan-500 rounded-lg flex items-center justify-center mb-4">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  {service.title}
+                  {feature.title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  {service.description}
+                  {feature.description}
                 </p>
               </div>
             ))}
@@ -208,46 +175,159 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Network Section */}
-      <section id="network" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-900 to-blue-700 text-white">
-        <div className="max-w-7xl mx-auto text-center">
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-sky-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-xl text-gray-600">
+              Get started in 4 simple steps
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {howItWorks.map((step, index) => (
+              <div key={index} className="relative">
+                <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all border border-sky-100">
+                  <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-cyan-500 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span className="text-2xl font-bold text-white">{step.step}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 text-center">
+                    {step.description}
+                  </p>
+                </div>
+                {index < howItWorks.length - 1 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                    <svg className="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600">
+              Choose the plan that fits your business needs
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <div
+                key={index}
+                className={`relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all p-8 ${
+                  plan.popular ? 'border-4 border-sky-500 transform scale-105' : 'border-2 border-sky-100'
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{plan.name}</h3>
+                  <div className="flex items-baseline justify-center">
+                    <span className="text-5xl font-bold bg-gradient-to-r from-sky-500 to-cyan-500 bg-clip-text text-transparent">
+                      {plan.price}
+                    </span>
+                    <span className="text-gray-600 ml-2">{plan.period}</span>
+                  </div>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start">
+                      <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/signup"
+                  className={`block w-full text-center py-3 rounded-lg font-semibold transition-all ${
+                    plan.popular
+                      ? 'bg-gradient-to-r from-sky-500 to-cyan-500 text-white hover:from-sky-600 hover:to-cyan-600 shadow-md'
+                      : 'bg-sky-50 text-sky-700 hover:bg-sky-100'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-sky-500 to-cyan-600">
+        <div className="max-w-7xl mx-auto text-center text-white">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Our Growing Network
+            Why Choose Fule Bharat?
           </h2>
-          <p className="text-xl mb-12 text-blue-100">
-            Expanding across India to serve you better
+          <p className="text-xl mb-12 max-w-3xl mx-auto opacity-90">
+            Join hundreds of station owners who trust Fule Bharat to manage their operations efficiently
           </p>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
-              <div className="text-5xl font-bold mb-2">500+</div>
-              <div className="text-blue-200">Fuel Stations</div>
+              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <h3 className="text-2xl font-bold mb-2">Secure & Reliable</h3>
+              <p className="opacity-90">Bank-grade security for your business data</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
-              <div className="text-5xl font-bold mb-2">50+</div>
-              <div className="text-blue-200">Cities Covered</div>
+              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <h3 className="text-2xl font-bold mb-2">Lightning Fast</h3>
+              <p className="opacity-90">Optimized performance for seamless experience</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
-              <div className="text-5xl font-bold mb-2">20+</div>
-              <div className="text-blue-200">States</div>
+              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <h3 className="text-2xl font-bold mb-2">24/7 Support</h3>
+              <p className="opacity-90">Expert help whenever you need it</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-orange-500 to-red-600">
-        <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Join Fuel Bharat Network
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Ready to Transform Your Station Management?
           </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Partner with us to grow your fuel station business
+          <p className="text-xl text-gray-600 mb-8">
+            Join Fule Bharat today and experience the future of fuel station operations
           </p>
           <Link
-            to="/login"
-            className="inline-block bg-white text-orange-600 px-10 py-4 rounded-full hover:bg-gray-100 transition-all font-bold text-lg shadow-xl transform hover:scale-105"
+            to="/signup"
+            className="inline-flex items-center justify-center bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-10 py-4 rounded-lg hover:from-sky-600 hover:to-cyan-600 transition-all font-semibold shadow-lg text-lg"
           >
-            Become a Partner
+            Get Started Now
+            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
           </Link>
         </div>
       </section>
@@ -258,48 +338,60 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">FB</span>
-                </div>
-                <span className="text-xl font-bold">Fuel Bharat</span>
+                <img 
+                  src="/WhatsApp%20Image%202025-12-10%20at%2016.41.29_8d5288d7.jpg" 
+                  alt="Fule Bharat Logo" 
+                  className="w-12 h-12 object-contain"
+                />
+                <span className="text-xl font-bold">FULE BHARAT</span>
               </div>
               <p className="text-gray-400">
-                Your trusted fuel partner
+                Modern CRM for fuel station management
               </p>
             </div>
             
             <div>
-              <h4 className="font-bold mb-4">Quick Links</h4>
+              <h4 className="font-bold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#home" className="hover:text-white">Home</a></li>
-                <li><a href="#about" className="hover:text-white">About Us</a></li>
-                <li><a href="#services" className="hover:text-white">Services</a></li>
-                <li><a href="#network" className="hover:text-white">Network</a></li>
+                <li><a href="#features" className="hover:text-white transition">Features</a></li>
+                <li><a href="#how-it-works" className="hover:text-white transition">How It Works</a></li>
+                <li><a href="#pricing" className="hover:text-white transition">Pricing</a></li>
+                <li><Link to="/login" className="hover:text-white transition">Login</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-bold mb-4">Services</h4>
+              <h4 className="font-bold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>Petrol & Diesel</li>
-                <li>CNG & LPG</li>
-                <li>EV Charging</li>
-                <li>Station Finder</li>
+                <li><a href="#contact" className="hover:text-white transition">Contact Us</a></li>
+                <li><a href="#" className="hover:text-white transition">Documentation</a></li>
+                <li><a href="#" className="hover:text-white transition">FAQ</a></li>
+                <li><a href="#" className="hover:text-white transition">Help Center</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-bold mb-4">Contact Us</h4>
+              <h4 className="font-bold mb-4">Contact</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>📞 Customer Care: 1906</li>
-                <li>📧 support@fuelbharat.com</li>
-                <li>📍 Mumbai, India</li>
+                <li className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  support@fulebharat.in
+                </li>
+                <li className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Mumbai, India
+                </li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
-            <p>© 2025 Fuel Bharat. All rights reserved. | Powering India's Energy Future</p>
+            <p>© 2025 Fule Bharat. All rights reserved. | Empowering Fuel Station Owners</p>
           </div>
         </div>
       </footer>
