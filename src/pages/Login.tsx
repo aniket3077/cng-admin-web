@@ -1,175 +1,165 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { adminApi } from '../services/api';
-
-type LoginType = 'subscriber' | 'admin';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Lock, ArrowRight, Loader, Zap } from 'lucide-react';
 
 export default function Login() {
-  const [loginType, setLoginType] = useState<LoginType>('subscriber');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: FormEvent) => {
+  const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
-      if (loginType === 'admin') {
-        const response = await adminApi.login(email, password);
-        localStorage.setItem('adminToken', response.token);
+      const endpoint = isAdmin ? '/admin/login' : '/auth/subscriber/login';
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Login failed');
+      }
+
+      // Store token based on user type
+      if (isAdmin) {
+        localStorage.setItem('adminToken', data.token);
         navigate('/dashboard');
       } else {
-        // Station Owner login
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const response = await fetch(`${API_URL}/auth/subscriber/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Login failed');
         localStorage.setItem('ownerToken', data.token);
-        localStorage.setItem('ownerUser', JSON.stringify(data.owner));
-        // Redirect to station owner dashboard
-        navigate('/owner/dashboard');
+        navigate('/owner-dashboard');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Login failed');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      alert(error.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-30"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-100 rounded-full blur-3xl opacity-30"></div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Gradients */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-200/40 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-lime-200/40 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="relative bg-white border border-gray-200 rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-900 rounded-2xl mb-4 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-lime-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary-500/20">
+            <Zap className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">CNG Bharat</h1>
-          <p className="text-gray-600 mt-2">Welcome back!</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">Welcome Back</h1>
+          <p className="text-slate-500">Sign in to manage your CNG stations</p>
         </div>
 
-        {/* Login Type Toggle */}
-        <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
-          <button
-            type="button"
-            onClick={() => { setLoginType('subscriber'); setError(''); }}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
-              loginType === 'subscriber'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+        <div className="glass-card p-8 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl">
+          {/* Toggle User Type */}
+          <div className="bg-slate-900/50 p-1 rounded-xl flex mb-8">
+            <button
+              onClick={() => setIsAdmin(false)}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isAdmin
+                ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
               Station Owner
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => { setLoginType('admin'); setError(''); }}
-            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
-              loginType === 'admin'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            </button>
+            <button
+              onClick={() => setIsAdmin(true)}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isAdmin
+                ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
               Admin
-            </span>
-          </button>
-        </div>
+            </button>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-              {error}
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
+                  placeholder="name@company.com"
+                />
+              </div>
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-              placeholder={loginType === 'admin' ? 'admin@cngbharat.com' : 'your@email.com'}
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-sm font-medium text-slate-600">Password</label>
+              </div>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                  <Lock className="w-5 h-5" />
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
+                <span className="text-slate-500">Remember me</span>
+              </label>
+              <a href="#" className="text-primary-600 hover:text-primary-700 transition-colors">Forgot password?</a>
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 px-4 rounded-xl font-medium transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
-              loginType === 'admin'
-                ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-900 hover:to-black'
-                : 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white hover:from-orange-600 hover:to-yellow-600'
-            }`}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Signing in...
-              </span>
-            ) : (
-              `Sign In as ${loginType === 'admin' ? 'Admin' : 'Station Owner'}`
-            )}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-primary-500 to-lime-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+            >
+              {loading ? (
+                <Loader className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
 
-        {loginType === 'subscriber' && (
           <div className="mt-6 text-center">
-            <Link to="/signup" className="text-gray-600 hover:text-gray-900 text-sm transition-colors">
-              Don't have an account? <span className="text-orange-500 font-medium">Sign up</span>
-            </Link>
+            <p className="text-slate-400 text-sm">
+              Don't have an account?{' '}
+              <button
+                onClick={() => navigate('/signup')}
+                className="text-white font-medium hover:text-primary-400 transition-colors"
+              >
+                Create account
+              </button>
+            </p>
           </div>
-        )}
-
-        {loginType === 'admin' && (
-          <div className="mt-4 text-center text-xs text-gray-500">
-            <p>Contact system administrator for admin credentials</p>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

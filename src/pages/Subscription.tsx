@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Check, Loader, Zap, Star, Shield, HelpCircle, Phone } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
 
@@ -168,144 +169,117 @@ export default function Subscription() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-12">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <Link to="/owner/dashboard" className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <span className="text-xl font-bold text-gray-900">CNG Bharat</span>
-              </Link>
-            </div>
-            <Link
-              to="/owner/dashboard"
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Dashboard
-            </Link>
-          </div>
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold text-white">Choose Your Plan</h1>
+        <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          Unlock the full potential of CNG Bharat. List your stations, track real-time availability, and grow your business.
+        </p>
+      </div>
+
+      {error && (
+        <div className="max-w-md mx-auto p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-center flex items-center justify-center gap-2">
+          <Shield className="w-5 h-5" />
+          {error}
         </div>
-      </header>
+      )}
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Get your CNG station listed on CNG Bharat and reach thousands of customers daily.
-          </p>
-        </div>
-
-        {error && (
-          <div className="max-w-md mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-center">
-            {error}
-          </div>
-        )}
-
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all ${
-                plan.popular
-                  ? 'border-orange-500 transform scale-105'
-                  : 'border-gray-200 hover:border-orange-300'
+      {/* Pricing Cards */}
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        {plans.map((plan) => (
+          <div
+            key={plan.id}
+            className={`relative glass-card rounded-3xl p-8 flex flex-col transition-all duration-300 hover:transform hover:-translate-y-2 group ${plan.popular
+                ? 'border-primary-500 shadow-2xl shadow-primary-500/20 bg-gradient-to-b from-slate-900/80 to-slate-900/90'
+                : 'border-white/10 hover:border-white/20'
               }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Most Popular
-                  </span>
-                </div>
-              )}
+          >
+            {plan.popular && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-primary-600 to-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary-500/30">
+                  Most Popular
+                </span>
+              </div>
+            )}
 
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <div className="flex items-baseline mb-6">
-                  <span className="text-4xl font-bold text-gray-900">₹{plan.price.toLocaleString()}</span>
-                  <span className="text-gray-500 ml-2">/{plan.duration}</span>
-                </div>
-
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="text-gray-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={loading && selectedPlan === plan.id}
-                  className={`w-full py-3 px-6 rounded-xl font-medium transition-all ${
-                    plan.popular
-                      ? 'bg-orange-500 text-white hover:bg-orange-600'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {loading && selectedPlan === plan.id ? 'Processing...' : 'Subscribe Now'}
-                </button>
+            <div className="mb-8">
+              <h3 className={`text-xl font-bold mb-2 ${plan.popular ? 'text-white' : 'text-slate-200'}`}>{plan.name}</h3>
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-white">₹{plan.price.toLocaleString()}</span>
+                <span className="text-slate-500 italic">/{plan.duration}</span>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* FAQ Section */}
-        <div className="mt-16 max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Frequently Asked Questions</h2>
-          
-          <div className="space-y-4">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-2">How do I get listed on the app?</h3>
-              <p className="text-gray-600">After subscribing, add your station details from the dashboard. Once verified by our team, your station will appear on the CNG Bharat app.</p>
+            <ul className="space-y-4 mb-8 flex-1">
+              {plan.features.map((feature, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-primary-500/20 text-primary-400' : 'bg-slate-800 text-slate-400'
+                    }`}>
+                    <Check className="w-3 h-3" />
+                  </div>
+                  <span className="text-slate-300 text-sm">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={() => handleSubscribe(plan.id)}
+              disabled={loading && selectedPlan === plan.id}
+              className={`w-full py-4 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${plan.popular
+                  ? 'bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white shadow-lg shadow-primary-500/25'
+                  : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {loading && selectedPlan === plan.id ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  {plan.popular ? <Zap className="w-5 h-5 fill-current" /> : <Star className="w-5 h-5" />}
+                  Subscribe Now
+                </>
+              )}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* FAQ / Info Section */}
+      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 pt-8">
+        <div className="glass-card p-6 rounded-2xl border border-white/5">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-500/10 rounded-xl mt-1">
+              <HelpCircle className="w-6 h-6 text-blue-400" />
             </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-2">Can I cancel my subscription?</h3>
-              <p className="text-gray-600">Yes, you can cancel anytime. Your listing will remain active until the end of your billing period.</p>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-2">What payment methods do you accept?</h3>
-              <p className="text-gray-600">We accept UPI, credit/debit cards, net banking, and wallets through our secure payment gateway.</p>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-2">How can customers find my station?</h3>
-              <p className="text-gray-600">Customers can search for CNG stations on the CNG Bharat mobile app. Your station will appear based on location and availability.</p>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">Need Custom Solutions?</h3>
+              <p className="text-slate-400 text-sm leading-relaxed mb-4">
+                Have multiple stations or specific enterprise needs? We can tailor a plan just for you.
+              </p>
+              <a href="tel:+919876543210" className="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-2 transition-colors">
+                <Phone className="w-4 h-4" /> Contact Sales
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Contact Section */}
-        <div className="mt-16 text-center">
-          <p className="text-gray-600 mb-4">Need help choosing the right plan?</p>
-          <a
-            href="tel:+919876543210"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-            Call Us: +91 98765 43210
-          </a>
+        <div className="glass-card p-6 rounded-2xl border border-white/5">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-emerald-500/10 rounded-xl mt-1">
+              <Shield className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white mb-2">Safe & Secure</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Secure payments via Razorpay. Cancel anytime. 24/7 dedicated support for premium partners.
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

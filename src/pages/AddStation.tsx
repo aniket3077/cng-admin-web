@@ -1,16 +1,16 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Phone, Clock, PlusCircle, CheckCircle, Navigation, Info, Loader, Fuel, Coffee, Car, BatteryCharging, DollarSign } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
 
 // Convert DMS (Degrees Minutes Seconds) to Decimal Degrees
 function dmsToDecimal(dmsString: string): { lat: number; lng: number } | null {
-  // Pattern to match formats like: 19°51'00.2"N 75°19'51.5"E
   const pattern = /(\d+)[°](\d+)['](\d+\.?\d*)["]?\s*([NS])\s*(\d+)[°](\d+)['](\d+\.?\d*)["]?\s*([EW])/i;
   const match = dmsString.match(pattern);
-  
+
   if (!match) {
-    // Try simpler format: 19.850056, 75.330972 (already decimal)
+    // Try simpler format: 19.850056, 75.330972
     const decimalPattern = /(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/;
     const decimalMatch = dmsString.match(decimalPattern);
     if (decimalMatch) {
@@ -21,23 +21,23 @@ function dmsToDecimal(dmsString: string): { lat: number; lng: number } | null {
     }
     return null;
   }
-  
+
   const latDeg = parseInt(match[1]);
   const latMin = parseInt(match[2]);
   const latSec = parseFloat(match[3]);
   const latDir = match[4].toUpperCase();
-  
+
   const lngDeg = parseInt(match[5]);
   const lngMin = parseInt(match[6]);
   const lngSec = parseFloat(match[7]);
   const lngDir = match[8].toUpperCase();
-  
+
   let lat = latDeg + latMin / 60 + latSec / 3600;
   let lng = lngDeg + lngMin / 60 + lngSec / 3600;
-  
+
   if (latDir === 'S') lat = -lat;
   if (lngDir === 'W') lng = -lng;
-  
+
   return { lat, lng };
 }
 
@@ -62,19 +62,19 @@ export default function AddStation() {
   const navigate = useNavigate();
 
   const amenityOptions = [
-    'Restroom',
-    'Air/Water',
-    'Food Court',
-    'ATM',
-    'Parking',
-    'EV Charging',
-    'Car Wash',
-    'Convenience Store',
+    { id: 'Restroom', icon: Coffee },
+    { id: 'Air/Water', icon: Fuel },
+    { id: 'Food Court', icon: Coffee },
+    { id: 'ATM', icon: DollarSign },
+    { id: 'Parking', icon: Car },
+    { id: 'EV Charging', icon: BatteryCharging },
+    { id: 'Car Wash', icon: Car },
+    { id: 'Convenience Store', icon: Coffee }
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     // Auto-convert DMS coordinates
     if (name === 'coordinates' && value) {
       const converted = dmsToDecimal(value);
@@ -88,7 +88,7 @@ export default function AddStation() {
         return;
       }
     }
-    
+
     setFormData({
       ...formData,
       [name]: value,
@@ -152,7 +152,7 @@ export default function AddStation() {
       }
 
       setSuccess('Station added successfully! It will be reviewed by admin.');
-      
+
       // Update owner data in localStorage with new station
       const ownerData = localStorage.getItem('ownerUser');
       if (ownerData) {
@@ -170,207 +170,162 @@ export default function AddStation() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-8">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <Link to="/owner/dashboard" className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <span className="text-xl font-bold text-gray-900">CNG Bharat</span>
-              </Link>
-            </div>
-            <Link
-              to="/owner/dashboard"
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Dashboard
-            </Link>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Add New Station</h1>
+        <p className="text-slate-400 mt-1">Register a new CNG station under your management.</p>
+      </div>
+
+      <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-xl">
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 flex items-center gap-3">
+            <Info className="w-5 h-5 flex-shrink-0" />
+            {error}
           </div>
-        </div>
-      </header>
+        )}
 
-      {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Add New Station</h1>
-          <p className="text-gray-600 mb-6">Fill in the details to register your CNG station.</p>
+        {success && (
+          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 flex-shrink-0" />
+            {success}
+          </div>
+        )}
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
-              {error}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Info */}
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+              <Fuel className="w-4 h-4" /> Basic Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">Station Name <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600"
+                  placeholder="e.g. Green Fuel Station"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">Contact Phone</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600"
+                    placeholder="Station contact number"
+                  />
+                </div>
+              </div>
             </div>
-          )}
+          </div>
 
-          {success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600">
-              {success}
-            </div>
-          )}
+          {/* Location */}
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+              <MapPin className="w-4 h-4" /> Location Details
+            </h3>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Station Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Station Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                placeholder="Enter station name"
-                required
-              />
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Address <span className="text-red-500">*</span>
-              </label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300 ml-1">Address <span className="text-red-400">*</span></label>
               <textarea
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 rows={2}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                placeholder="Enter full address"
+                className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600"
+                placeholder="Street address, landmark..."
                 required
               />
             </div>
 
-            {/* City & State */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City <span className="text-red-500">*</span>
-                </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">City <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
                   placeholder="City"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  State <span className="text-red-500">*</span>
-                </label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">State <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
                   placeholder="State"
                   required
                 />
               </div>
-            </div>
-
-            {/* Postal Code & Phone */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Postal Code
-                </label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">Postal Code</label>
                 <input
                   type="text"
                   name="postalCode"
                   value={formData.postalCode}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
                   placeholder="PIN Code"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Station Phone
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="Station contact number"
-                />
-              </div>
             </div>
 
-            {/* Coordinates - DMS or Decimal */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                GPS Coordinates
-              </label>
-              <input
-                type="text"
-                name="coordinates"
-                value={formData.coordinates}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                placeholder={`e.g., 19°51'00.2"N 75°19'51.5"E or 19.850056, 75.330972`}
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Paste from Google Maps (DMS or decimal format)
-              </p>
-            </div>
-
-            {/* Converted Coordinates Display */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Latitude (Decimal)
-                </label>
-                <input
-                  type="text"
-                  name="lat"
-                  value={formData.lat}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
-                  placeholder="Auto-filled"
-                  readOnly={!!formData.coordinates}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Longitude (Decimal)
-                </label>
-                <input
-                  type="text"
-                  name="lng"
-                  value={formData.lng}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
-                  placeholder="Auto-filled"
-                  readOnly={!!formData.coordinates}
-                />
+            <div className="bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300 ml-1">GPS Coordinates</label>
+                <div className="relative">
+                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    name="coordinates"
+                    value={formData.coordinates}
+                    onChange={handleChange}
+                    className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600 font-mono text-sm"
+                    placeholder={`e.g., 19°51'00.2"N 75°19'51.5"E`}
+                  />
+                </div>
+                <div className="flex gap-4 mt-2">
+                  <div className="flex-1 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
+                    <span className="text-xs text-slate-500 block">Latitude</span>
+                    <span className="text-sm text-slate-300 font-mono">{formData.lat || '-'}</span>
+                  </div>
+                  <div className="flex-1 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
+                    <span className="text-xs text-slate-500 block">Longitude</span>
+                    <span className="text-sm text-slate-300 font-mono">{formData.lng || '-'}</span>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Opening Hours */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Opening Hours
-              </label>
+          {/* Operations */}
+          <div className="space-y-6">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+              <Clock className="w-4 h-4" /> Operations & Amenities
+            </h3>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300 ml-1">Opening Hours</label>
               <select
                 name="openingHours"
                 value={formData.openingHours}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all cursor-pointer"
               >
                 <option value="24/7">24/7 (Open all day)</option>
                 <option value="6AM-10PM">6 AM - 10 PM</option>
@@ -379,48 +334,56 @@ export default function AddStation() {
               </select>
             </div>
 
-            {/* Amenities */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amenities
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {amenityOptions.map((amenity) => (
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-slate-300 ml-1">Available Amenities</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {amenityOptions.map(({ id, icon: Icon }) => (
                   <button
-                    key={amenity}
+                    key={id}
                     type="button"
-                    onClick={() => handleAmenityToggle(amenity)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      formData.amenities.includes(amenity)
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    onClick={() => handleAmenityToggle(id)}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all border ${formData.amenities.includes(id)
+                        ? 'bg-primary-500/10 text-primary-500 border-primary-500/50 shadow-lg shadow-primary-500/20'
+                        : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-slate-200'
+                      }`}
                   >
-                    {amenity}
+                    <Icon className="w-4 h-4" />
+                    {id}
                   </button>
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Submit Button */}
-            <div className="flex gap-4 pt-4">
-              <Link
-                to="/owner/dashboard"
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors text-center"
-              >
-                Cancel
-              </Link>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Adding Station...' : 'Add Station'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </main>
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-4 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={() => navigate('/owner/dashboard')}
+              className="px-6 py-3 rounded-xl border border-slate-700 text-slate-400 font-medium hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Adding Station...</span>
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="w-5 h-5" />
+                  <span>Register Station</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

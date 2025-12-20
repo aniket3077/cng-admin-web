@@ -1,21 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
-import { adminApi, StationOwner } from '../services/api';
+import { Search, Loader, CheckCircle, XCircle, Eye, Shield, Trash2, Ban } from 'lucide-react';
+import { adminApi } from '../services/api';
 
 export default function StationOwners() {
-  const navigate = useNavigate();
-  const [owners, setOwners] = useState<StationOwner[]>([]);
+  const [owners, setOwners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOwner, setSelectedOwner] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [kycFilter, setKycFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [selectedOwner, setSelectedOwner] = useState<StationOwner | null>(null);
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchOwners();
@@ -31,7 +27,6 @@ export default function StationOwners() {
       });
       setOwners(response.owners || []);
       setTotalPages(response.pagination?.totalPages || 1);
-      setTotal(response.pagination?.total || 0);
     } catch (error) {
       console.error('Error fetching owners:', error);
     } finally {
@@ -48,34 +43,33 @@ export default function StationOwners() {
     try {
       await adminApi.updateOwner(ownerId, { status: 'active' });
       fetchOwners();
+      if (selectedOwner?.id === ownerId) setShowModal(false);
     } catch (error) {
-      console.error('Error approving owner:', error);
-      alert('Failed to approve owner');
+      console.error('Failed to approve owner:', error);
     }
   };
 
-  const handleReject = async (ownerId: string) => {
-    const reason = prompt('Enter rejection reason:');
-    if (!reason) return;
-    
-    try {
-      await adminApi.updateOwner(ownerId, { status: 'rejected', kycRejectionReason: reason });
-      fetchOwners();
-    } catch (error) {
-      console.error('Error rejecting owner:', error);
-      alert('Failed to reject owner');
-    }
-  };
+
 
   const handleSuspend = async (ownerId: string) => {
-    if (!confirm('Are you sure you want to suspend this owner?')) return;
-    
+    if (!confirm('Are you sure you want to suspend this owner? This will disable all their stations.')) return;
     try {
       await adminApi.updateOwner(ownerId, { status: 'suspended' });
       fetchOwners();
+      if (selectedOwner?.id === ownerId) setShowModal(false);
     } catch (error) {
-      console.error('Error suspending owner:', error);
-      alert('Failed to suspend owner');
+      console.error('Failed to suspend owner:', error);
+    }
+  };
+
+  const handleDelete = async (ownerId: string) => {
+    if (!confirm('Are you sure you want to PERMANENTLY DELETE this owner? This action cannot be undone.')) return;
+    try {
+      await adminApi.deleteOwner(ownerId);
+      fetchOwners();
+      if (selectedOwner?.id === ownerId) setShowModal(false);
+    } catch (error) {
+      console.error('Failed to delete owner:', error);
     }
   };
 
@@ -83,484 +77,314 @@ export default function StationOwners() {
     try {
       await adminApi.updateOwner(ownerId, { kycStatus: 'verified' });
       fetchOwners();
-    } catch (error) {
-      console.error('Error verifying KYC:', error);
-      alert('Failed to verify KYC');
-    }
+      if (selectedOwner?.id === ownerId) setShowModal(false);
+    } catch (error) { console.error(error); }
   };
 
   const handleRejectKYC = async (ownerId: string) => {
     const reason = prompt('Enter KYC rejection reason:');
     if (!reason) return;
-    
     try {
       await adminApi.updateOwner(ownerId, { kycStatus: 'rejected', kycRejectionReason: reason });
       fetchOwners();
-    } catch (error) {
-      console.error('Error rejecting KYC:', error);
-      alert('Failed to reject KYC');
-    }
+      if (selectedOwner?.id === ownerId) setShowModal(false);
+    } catch (error) { console.error(error); }
   };
 
-  const handleDelete = async (ownerId: string) => {
-    if (!confirm('Are you sure you want to delete this owner? This action cannot be undone.')) return;
-    
-    try {
-      await adminApi.deleteOwner(ownerId);
-      fetchOwners();
-    } catch (error) {
-      console.error('Error deleting owner:', error);
-      alert('Failed to delete owner');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/login');
-  };
 
   const getStatusBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      active: 'bg-green-100 text-green-800',
-      suspended: 'bg-red-100 text-red-800',
-      rejected: 'bg-gray-100 text-gray-800',
+    const styles: Record<string, string> = {
+      active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+      pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+      suspended: 'bg-red-500/10 text-red-500 border-red-500/20',
+      rejected: 'bg-red-500/10 text-red-500 border-red-500/20',
     };
-    return badges[status] || 'bg-gray-100 text-gray-800';
+    return `px-3 py-1 rounded-full text-xs font-medium border ${styles[status] || 'bg-slate-700 text-slate-300'}`;
   };
 
   const getKycBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      verified: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
+    const styles: Record<string, string> = {
+      verified: 'text-blue-400 bg-blue-400/10 border-blue-400/20',
+      pending: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
+      rejected: 'text-red-400 bg-red-400/10 border-red-400/20',
+      not_submitted: 'text-slate-400 bg-slate-400/10 border-slate-400/20'
     };
-    return badges[status] || 'bg-gray-100 text-gray-800';
+    return `px-2 py-0.5 rounded text-[10px] font-semibold border uppercase tracking-wider ${styles[status] || styles.not_submitted}`;
   };
 
-  const filteredOwners = searchTerm
-    ? owners.filter(owner =>
-        owner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        owner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        owner.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        owner.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : owners;
-
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar onLogout={handleLogout} />
-      
-      <div className="flex-1 flex flex-col ml-64">
-        <TopBar />
-        
-        <main className="flex-1 overflow-y-auto p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Station Owners</h1>
-            <p className="text-gray-600">Manage station owner accounts, KYC verification, and approvals</p>
-          </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Station Owners</h1>
+          <p className="text-slate-400 mt-1">Manage registered station owners and businesses.</p>
+        </div>
+      </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Total Owners</p>
-                  <p className="text-2xl font-bold text-gray-900">{total}</p>
-                </div>
-                <div className="w-12 h-12 bg-sky-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Pending Approval</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {owners.filter(o => o.status === 'pending').length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Active Owners</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {owners.filter(o => o.status === 'active').length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">KYC Pending</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {owners.filter(o => o.kycStatus === 'pending').length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Filters */}
+      <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search owners by name, email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            className="w-full bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2.5 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-primary-500/50"
+          />
+        </div>
 
-          {/* Filters */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex-1 min-w-64">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search by name, email, phone, company..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                  />
-                  <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                aria-label="Filter by status"
-              >
-                <option value="">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="active">Active</option>
-                <option value="suspended">Suspended</option>
-                <option value="rejected">Rejected</option>
-              </select>
-              <select
-                value={kycFilter}
-                onChange={(e) => { setKycFilter(e.target.value); setCurrentPage(1); }}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                aria-label="Filter by KYC status"
-              >
-                <option value="">All KYC Status</option>
-                <option value="pending">KYC Pending</option>
-                <option value="verified">KYC Verified</option>
-                <option value="rejected">KYC Rejected</option>
-              </select>
+        <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-slate-800 border-none rounded-lg py-2.5 pl-4 pr-10 text-slate-200 focus:ring-2 focus:ring-primary-500/50 cursor-pointer min-w-[140px]"
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
+          <select
+            value={kycFilter}
+            onChange={(e) => setKycFilter(e.target.value)}
+            className="bg-slate-800 border-none rounded-lg py-2.5 pl-4 pr-10 text-slate-200 focus:ring-2 focus:ring-primary-500/50 cursor-pointer min-w-[140px]"
+          >
+            <option value="">All KYC</option>
+            <option value="verified">Verified</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+            <option value="not_submitted">Not Submitted</option>
+          </select>
+
+          <button
+            onClick={handleSearch}
+            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors shadow-lg shadow-primary-500/20 whitespace-nowrap"
+          >
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="glass-card rounded-xl overflow-hidden border border-slate-800">
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+              <p className="text-slate-400">Loading owners...</p>
+            </div>
+          ) : owners.length === 0 ? (
+            <div className="text-center py-20 text-slate-500">
+              No station owners found.
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-700/50 bg-slate-900/50 text-xs uppercase text-slate-400 font-semibold tracking-wider">
+                  <th className="p-6">Owner Profile</th>
+                  <th className="p-6">Contact Info</th>
+                  <th className="p-6">Status & KYC</th>
+                  <th className="p-6">Joined Date</th>
+                  <th className="p-6 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {owners.map((owner) => (
+                  <tr key={owner.id} className="group hover:bg-white/5 transition-colors">
+                    <td className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-slate-300 font-bold border border-slate-600">
+                          {owner.name?.charAt(0) || 'U'}
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-200">{owner.name}</p>
+                          <p className="text-xs text-slate-500">{owner.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <p className="text-slate-300 text-sm">{owner.phone}</p>
+                      <p className="text-slate-500 text-xs">{owner.address || 'No address'}</p>
+                    </td>
+                    <td className="p-6">
+                      <div className="flex flex-col gap-2 items-start">
+                        <span className={getStatusBadge(owner.status)}>
+                          {owner.status}
+                        </span>
+                        <span className={getKycBadge(owner.kycStatus)}>
+                          KYC: {owner.kycStatus?.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-6 text-slate-400 text-sm">
+                      {new Date(owner.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="p-6 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => { setSelectedOwner(owner); setShowModal(true); }}
+                          className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {/* Quick Actions if essential, otherwise keep in modal to reduce clutter */}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
+            <span className="text-sm text-slate-500">Page {currentPage} of {totalPages}</span>
+            <div className="flex gap-2">
               <button
-                onClick={handleSearch}
-                className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-slate-300 transition-colors"
               >
-                Search
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-slate-300 transition-colors"
+              >
+                Next
               </button>
             </div>
           </div>
-
-          {/* Table */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Owner</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Company</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">KYC</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Stations</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                        <div className="flex justify-center items-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-500"></div>
-                          <span className="ml-3">Loading owners...</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : filteredOwners.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                        No station owners found
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredOwners.map((owner) => (
-                      <tr key={owner.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
-                              <span className="text-sky-600 font-semibold">
-                                {owner.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{owner.name}</div>
-                              <div className="text-sm text-gray-500">{owner.email}</div>
-                              <div className="text-xs text-gray-400">{owner.phone}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900">{owner.companyName || '-'}</div>
-                          {owner.gstNumber && (
-                            <div className="text-xs text-gray-500">GST: {owner.gstNumber}</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(owner.status)}`}>
-                            {owner.status.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getKycBadge(owner.kycStatus)}`}>
-                            {owner.kycStatus.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-medium text-gray-900">
-                            {owner._count?.stations || 0}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => { setSelectedOwner(owner); setShowModal(true); }}
-                              className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg"
-                              title="View Details"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </button>
-                            {owner.status === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => handleApprove(owner.id)}
-                                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
-                                  title="Approve"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => handleReject(owner.id)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                                  title="Reject"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </>
-                            )}
-                            {owner.kycStatus === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => handleVerifyKYC(owner.id)}
-                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                  title="Verify KYC"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => handleRejectKYC(owner.id)}
-                                  className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg"
-                                  title="Reject KYC"
-                                >
-                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                  </svg>
-                                </button>
-                              </>
-                            )}
-                            {owner.status === 'active' && (
-                              <button
-                                onClick={() => handleSuspend(owner.id)}
-                                className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg"
-                                title="Suspend"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                </svg>
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleDelete(owner.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                              title="Delete"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <div className="text-sm text-gray-500">
-                  Page {currentPage} of {totalPages} ({total} total)
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </main>
+        )}
       </div>
 
       {/* Owner Details Modal */}
       {showModal && selectedOwner && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
-            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Owner Details</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-                aria-label="Close modal"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl animate-fade-in border border-slate-700">
+            <div className="p-6 border-b border-slate-700/50 flex justify-between items-center sticky top-0 bg-slate-900/90 backdrop-blur z-10">
+              <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary-500/20 text-primary-500 flex items-center justify-center text-sm font-bold">
+                  {selectedOwner.name?.charAt(0)}
+                </div>
+                {selectedOwner.name}
+              </h2>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
+                <XCircle className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              {/* Personal Info */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Personal Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-gray-500">Name</label>
-                    <p className="text-sm font-medium">{selectedOwner.name}</p>
+
+            <div className="p-6 space-y-8">
+              {/* Account Status Section */}
+              <div className="flex gap-6 p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Account Status</label>
+                  <div><span className={getStatusBadge(selectedOwner.status)}>{selectedOwner.status}</span></div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">KYC Status</label>
+                  <div><span className={getKycBadge(selectedOwner.kycStatus)}>{selectedOwner.kycStatus?.replace('_', ' ')}</span></div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-white border-b border-slate-700 pb-2">Business Information</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Company Name</label>
+                      <p className="text-slate-200">{selectedOwner.companyName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Business Type</label>
+                      <p className="text-slate-200">{selectedOwner.businessType || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Tax ID / GST</label>
+                      <p className="text-slate-200">{selectedOwner.taxId || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Address</label>
+                      <p className="text-slate-200">{selectedOwner.address || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-xs text-gray-500">Email</label>
-                    <p className="text-sm font-medium">{selectedOwner.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">Phone</label>
-                    <p className="text-sm font-medium">{selectedOwner.phone}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">Status</label>
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(selectedOwner.status)}`}>
-                      {selectedOwner.status.toUpperCase()}
-                    </span>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-white border-b border-slate-700 pb-2">Contact Details</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Email</label>
+                      <p className="text-slate-200">{selectedOwner.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 block mb-1">Phone</label>
+                      <p className="text-slate-200">{selectedOwner.phone}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Company Info */}
+              {/* Documents Section */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Company Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs text-gray-500">Company Name</label>
-                    <p className="text-sm font-medium">{selectedOwner.companyName || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">GST Number</label>
-                    <p className="text-sm font-medium">{selectedOwner.gstNumber || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">PAN Number</label>
-                    <p className="text-sm font-medium">{selectedOwner.panNumber || '-'}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-500">KYC Status</label>
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getKycBadge(selectedOwner.kycStatus)}`}>
-                      {selectedOwner.kycStatus.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Address</h3>
-                <p className="text-sm">
-                  {selectedOwner.address || '-'}<br />
-                  {selectedOwner.city}, {selectedOwner.state} {selectedOwner.postalCode}
-                </p>
-              </div>
-
-              {/* Stations */}
-              {selectedOwner.stations && selectedOwner.stations.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-3">Stations ({selectedOwner.stations.length})</h3>
-                  <div className="space-y-2">
-                    {selectedOwner.stations.map(station => (
-                      <div key={station.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium">{station.name}</p>
-                          <p className="text-xs text-gray-500">{station.city}</p>
+                <h3 className="text-sm font-bold text-white border-b border-slate-700 pb-2 mb-4">KYC Documents</h3>
+                {selectedOwner.kycDocuments && selectedOwner.kycDocuments.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {selectedOwner.kycDocuments.map((doc: any, index: number) => (
+                      <div key={index} className="p-3 bg-slate-800 rounded-lg flex items-center justify-between border border-slate-700">
+                        <div className="flex items-center gap-3">
+                          <Shield className="w-4 h-4 text-primary-500" />
+                          <span className="text-sm text-slate-300 capitalize">{doc.type.replace('_', ' ')}</span>
                         </div>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded ${
-                          station.approvalStatus === 'approved' ? 'bg-green-100 text-green-800' :
-                          station.approvalStatus === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {station.approvalStatus}
-                        </span>
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-400 hover:text-primary-300 font-medium hover:underline">View</a>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Dates */}
-              <div className="text-xs text-gray-500 pt-4 border-t">
-                <p>Created: {new Date(selectedOwner.createdAt).toLocaleString()}</p>
-                {selectedOwner.lastLoginAt && (
-                  <p>Last Login: {new Date(selectedOwner.lastLoginAt).toLocaleString()}</p>
+                ) : (
+                  <p className="text-slate-500 italic text-sm">No KYC documents submitted.</p>
                 )}
               </div>
+
+              {/* Actions Panel */}
+              <div className="pt-6 border-t border-slate-700 space-y-4">
+                <h3 className="text-sm font-bold text-white mb-2">Administrative Actions</h3>
+                <div className="flex flex-wrap gap-3">
+                  {selectedOwner.status === 'pending' || selectedOwner.status === 'suspended' ? (
+                    <button onClick={() => handleApprove(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors border border-emerald-500/20">
+                      <CheckCircle className="w-4 h-4" /> Activate Owner
+                    </button>
+                  ) : (
+                    <button onClick={() => handleSuspend(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 rounded-lg transition-colors border border-orange-500/20">
+                      <Ban className="w-4 h-4" /> Suspend Owner
+                    </button>
+                  )}
+
+                  {selectedOwner.kycStatus === 'pending' && (
+                    <>
+                      <button onClick={() => handleVerifyKYC(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-colors border border-blue-500/20">
+                        <Shield className="w-4 h-4" /> Verify KYC
+                      </button>
+                      <button onClick={() => handleRejectKYC(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20">
+                        <XCircle className="w-4 h-4" /> Reject KYC
+                      </button>
+                    </>
+                  )}
+
+                  <button onClick={() => handleDelete(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20 ml-auto">
+                    <Trash2 className="w-4 h-4" /> Delete Account
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

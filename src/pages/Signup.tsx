@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { User, Mail, Phone, Lock, Navigation, Info, ArrowRight, Loader, Zap, CheckCircle } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
 
@@ -29,19 +30,19 @@ export default function Signup() {
       // Match patterns like: 19°51'00.2"N 75°19'51.5"E
       const regex = /(\d+)°(\d+)'([\d.]+)"([NS])\s+(\d+)°(\d+)'([\d.]+)"([EW])/;
       const match = dmsString.match(regex);
-      
+
       if (!match) return null;
-      
+
       const [, latDeg, latMin, latSec, latDir, lngDeg, lngMin, lngSec, lngDir] = match;
-      
+
       // Convert to decimal
       let lat = parseFloat(latDeg) + parseFloat(latMin) / 60 + parseFloat(latSec) / 3600;
       let lng = parseFloat(lngDeg) + parseFloat(lngMin) / 60 + parseFloat(lngSec) / 3600;
-      
+
       // Apply direction
       if (latDir === 'S') lat = -lat;
       if (lngDir === 'W') lng = -lng;
-      
+
       return { lat, lng };
     } catch (error) {
       console.error('DMS parsing error:', error);
@@ -51,7 +52,7 @@ export default function Signup() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     // Auto-detect and convert DMS format for coordinates field
     if (name === 'coordinates' && value.includes('°')) {
       const parsed = parseDMS(value);
@@ -65,7 +66,7 @@ export default function Signup() {
         return;
       }
     }
-    
+
     setFormData({
       ...formData,
       [name]: value,
@@ -111,13 +112,13 @@ export default function Signup() {
           lng: formData.lng,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || data.details?.[0]?.message || 'Registration failed');
       }
-      
+
       setSuccess('Registration successful! Your account has been created.');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
@@ -128,242 +129,267 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-100 rounded-full blur-3xl opacity-30"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-100 rounded-full blur-3xl opacity-30"></div>
+    <div className="min-h-screen bg-slate-50 flex py-10 px-4 relative overflow-x-hidden">
+      {/* Background Gradients */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-primary-200/40 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[10%] w-[50%] h-[50%] bg-lime-200/40 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="relative bg-white border border-gray-200 rounded-2xl shadow-xl p-8 w-full max-w-2xl">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-900 rounded-2xl mb-4 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Join CNG Bharat
-          </h1>
-          <p className="text-gray-600 mt-2">Register as a Station Owner</p>
+      <div className="w-full max-w-5xl mx-auto relative z-10">
+        <div className="text-center mb-10 animate-slide-up">
+          <Link to="/login" className="inline-flex items-center gap-2 text-slate-500 hover:text-primary-600 mb-6 transition-colors font-medium">
+            <ArrowRight className="w-4 h-4 rotate-180" /> Back to Login
+          </Link>
+          <h1 className="text-4xl font-bold text-slate-800 mb-3 tracking-tight">Partner Registration</h1>
+          <p className="text-slate-500 text-lg max-w-2xl mx-auto">
+            Join the CNG Bharat network. Register your station and start managing your operations digitally.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
-              {error}
-            </div>
-          )}
-          
-          {success && (
-            <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl text-sm">
-              {success}
-            </div>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Owner Details */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                Owner Details
-              </h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="john@example.com"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="9876543210"
-                  maxLength={10}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password *
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Station Details */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                Station Details
-              </h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Station Name
-                </label>
-                <input
-                  type="text"
-                  name="stationName"
-                  value={formData.stationName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="ABC CNG Station"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Station Address
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="Street address"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                    placeholder="Mumbai"
-                  />
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Form Section */}
+          <div className="lg:col-span-3">
+            <div className="glass-card p-8 rounded-3xl backdrop-blur-xl border border-white/60 shadow-2xl">
+              {error && (
+                <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  {error}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                    placeholder="Maharashtra"
-                  />
+              )}
+
+              {success && (
+                <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  {success}
                 </div>
-              </div>
+              )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Coordinates (GPS Location)
-                  <span className="text-gray-500 text-xs ml-2">Format: 19°51'00.2"N 75°19'51.5"E</span>
-                </label>
-                <input
-                  type="text"
-                  name="coordinates"
-                  value={formData.coordinates}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-mono text-sm"
-                  placeholder={`19°51'00.2"N 75°19'51.5"E`}
-                />
-                {formData.lat && formData.lng && (
-                  <p className="mt-2 text-sm text-green-600">
-                    ✓ Converted: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
-                  </p>
-                )}
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Personal Information */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <User className="w-4 h-4" /> Personal Details
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm font-medium text-slate-700 ml-1">Full Name</label>
+                      <input
+                        id="name"
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="email" className="text-sm font-medium text-slate-700 ml-1">Email</label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                            placeholder="john@example.com"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="phone" className="text-sm font-medium text-slate-700 ml-1">Phone</label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                            placeholder="+91 98765 43210"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  <span className="text-orange-600 font-semibold">Note:</span> After registration, 
-                  your account will be reviewed by our admin team. You'll receive a confirmation 
-                  email once approved.
-                </p>
-              </div>
+                <div className="h-px bg-slate-100"></div>
+
+                {/* Station Information */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <Zap className="w-4 h-4" /> Station Details
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label htmlFor="stationName" className="text-sm font-medium text-slate-700 ml-1">Station Name</label>
+                      <input
+                        id="stationName"
+                        type="text"
+                        name="stationName"
+                        value={formData.stationName}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Green Fuel Station - 01"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label htmlFor="address" className="text-sm font-medium text-slate-700 ml-1">Address</label>
+                      <input
+                        id="address"
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Plot No. 123, Sector 4..."
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label htmlFor="city" className="text-sm font-medium text-slate-700 ml-1">City</label>
+                        <input
+                          id="city"
+                          type="text"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleChange}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label htmlFor="state" className="text-sm font-medium text-slate-700 ml-1">State</label>
+                        <input
+                          id="state"
+                          type="text"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleChange}
+                          required
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Coordinates Input */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center ml-1">
+                        <label className="text-sm font-medium text-slate-700">Location Coordinates</label>
+                        <span className="text-xs text-primary-600 font-medium bg-primary-50 px-2 py-0.5 rounded-full border border-primary-100">Supports DMS</span>
+                      </div>
+                      <div className="relative">
+                        <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="text"
+                          name="coordinates"
+                          value={formData.coordinates}
+                          onChange={handleChange}
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 font-mono text-sm placeholder:text-slate-400"
+                          placeholder="25.2345, 75.1234 OR 19°51'00.2&quot;N 75°19'51.5&quot;E"
+                        />
+                      </div>
+                      {formData.lat && (
+                        <p className="text-xs text-emerald-600 ml-1 font-medium flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Parsed: {formData.lat.toFixed(6)}, {formData.lng?.toFixed(6)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-px bg-slate-100"></div>
+
+                {/* Security */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <Lock className="w-4 h-4" /> Security
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                      placeholder="Password"
+                    />
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 placeholder:text-slate-400"
+                      placeholder="Confirm Password"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-500/25 transition-all duration-300 flex items-center justify-center gap-2 group hover:-translate-y-1 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+                >
+                  {loading ? (
+                    <Loader className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>Submit Registration</span>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white py-3 px-4 rounded-xl hover:from-orange-600 hover:to-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all shadow-lg"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Registering...
-              </span>
-            ) : (
-              'Register Station'
-            )}
-          </button>
-        </form>
+          {/* Info Side Panel (Desktop only) */}
+          <div className="lg:col-span-2 space-y-6 hidden lg:block">
+            <div className="glass-card p-6 rounded-3xl border border-white/60 shadow-xl">
+              <h3 className="text-xl font-bold text-slate-800 mb-4">Why Partner with Us?</h3>
+              <ul className="space-y-4">
+                {[
+                  "Real-time inventory management",
+                  "Automated daily reporting",
+                  "Verified partner badge",
+                  "Direct listing on CNG Bharat app",
+                  "Priority support 24/7"
+                ].map((item, index) => (
+                  <li key={index} className="flex items-center gap-3 text-slate-600">
+                    <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 text-primary-600">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-        <div className="mt-6 text-center space-y-2">
-          <Link to="/login" className="text-gray-600 hover:text-gray-900 text-sm transition-colors block">
-            Already have an account? <span className="text-orange-500 font-medium">Sign In</span>
-          </Link>
-          <Link to="/" className="text-gray-600 hover:text-gray-900 text-sm transition-colors block">
-            ← Back to Home
-          </Link>
+            <div className="glass-card p-6 rounded-3xl border border-white/60 shadow-xl bg-gradient-to-br from-primary-500 to-lime-500 text-white relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold mb-2">Need Help?</h3>
+                <p className="text-primary-50 opacity-90 mb-4 text-sm">Our support team is available to assist you with the registration process.</p>
+                <button className="bg-white text-primary-600 px-4 py-2 rounded-lg text-sm font-bold shadow-lg">Contact Support</button>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

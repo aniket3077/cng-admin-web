@@ -1,4 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  MapPin,
+  Users,
+  CreditCard,
+  PlusCircle,
+  User,
+  LogOut,
+  Fuel
+} from 'lucide-react';
 
 interface SidebarProps {
   onLogout: () => void;
@@ -6,160 +16,79 @@ interface SidebarProps {
 
 export default function Sidebar({ onLogout }: SidebarProps) {
   const location = useLocation();
-  const userType = localStorage.getItem('userType');
-  const isOwner = userType === 'owner';
-  
+  const isOwnerRoute = location.pathname.startsWith('/owner');
+
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // Owner Sidebar
-  if (isOwner) {
-    return (
-      <aside className="w-64 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white fixed h-full shadow-2xl z-50">
-        <div className="p-6">
-          <Link to="/owner/dashboard" className="flex items-center space-x-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center">
-              <span className="text-xl">⛽</span>
-            </div>
-            <span className="text-xl font-bold">CNG Bharat</span>
-          </Link>
+  const NavItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => (
+    <Link
+      to={to}
+      className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 ${isActive(to)
+        ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
+        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+        }`}
+    >
+      <Icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive(to) ? 'fill-current' : ''}`} />
+      <span className="font-medium tracking-wide">{label}</span>
+      {isActive(to) && (
+        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+      )}
+    </Link>
+  );
 
-          <div className="space-y-2">
-            <div className="text-xs uppercase text-gray-500 font-semibold mb-3 px-3">Main Menu</div>
-            <Link
-              to="/owner/dashboard"
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive('/owner/dashboard')
-                  ? 'bg-gray-700/50 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-              }`}
-            >
-              <span className="text-lg">📊</span>
-              <span className="font-medium">Dashboard</span>
-            </Link>
-            <Link
-              to="/owner/add-station"
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive('/owner/add-station')
-                  ? 'bg-gray-700/50 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-              }`}
-            >
-              <span className="text-lg">➕</span>
-              <span className="font-medium">Add Station</span>
-            </Link>
-            <Link
-              to="/owner/profile"
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive('/owner/profile')
-                  ? 'bg-gray-700/50 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-              }`}
-            >
-              <span className="text-lg">👤</span>
-              <span className="font-medium">Profile & CNG Status</span>
-            </Link>
-            <Link
-              to="/owner/subscription"
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive('/owner/subscription')
-                  ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                  : 'text-gray-400 hover:text-orange-400 hover:bg-orange-500/10'
-              }`}
-            >
-              <span className="text-lg">⭐</span>
-              <span className="font-medium">Subscription</span>
-            </Link>
-          </div>
-
-          <div className="mt-8">
-            <div className="text-xs uppercase text-gray-500 font-semibold mb-3 px-3">Account</div>
-            <button
-              onClick={onLogout}
-              className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors w-full"
-            >
-              <span className="text-lg">🚪</span>
-              <span className="font-medium">Log Out</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-    );
-  }
-
-  // Admin Sidebar
   return (
-    <aside className="w-64 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white fixed h-full shadow-2xl z-50">
-      <div className="p-6">
-        <Link to="/dashboard" className="flex items-center space-x-3 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center">
-            <span className="text-xl">⛽</span>
+    <aside className="w-72 h-screen fixed left-0 top-0 z-50 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 shadow-xl shadow-slate-200/50">
+      {/* Brand */}
+      <div className="p-8">
+        <Link to={isOwnerRoute ? "/owner/dashboard" : "/dashboard"} className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-500 to-lime-400 flex items-center justify-center shadow-lg shadow-primary-500/30 group-hover:shadow-primary-500/50 transition-all duration-300">
+            <Fuel className="w-6 h-6 text-white" />
           </div>
-          <div>
-            <span className="text-xl font-bold block">CNG Bharat</span>
-            <span className="text-xs text-gray-400">Admin Panel</span>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight">CNG Bharat</h1>
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              {isOwnerRoute ? 'Station Partner' : 'Admin Console'}
+            </span>
           </div>
         </Link>
+      </div>
 
-        <div className="space-y-2">
-          <div className="text-xs uppercase text-gray-500 font-semibold mb-3 px-3">Main Menu</div>
-          <Link
-            to="/dashboard"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-              isActive('/dashboard')
-                ? 'bg-gray-700/50 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-            }`}
-          >
-            <span className="text-lg">📊</span>
-            <span className="font-medium">Dashboard</span>
-          </Link>
-          <Link
-            to="/stations"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-              isActive('/stations')
-                ? 'bg-gray-700/50 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-            }`}
-          >
-            <span className="text-lg">⛽</span>
-            <span className="font-medium">Stations</span>
-          </Link>
-          <Link
-            to="/owners"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-              isActive('/owners')
-                ? 'bg-gray-700/50 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-            }`}
-          >
-            <span className="text-lg">👥</span>
-            <span className="font-medium">Station Owners</span>
-          </Link>
-          <Link
-            to="/subscriptions"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-              isActive('/subscriptions')
-                ? 'bg-gray-700/50 text-white'
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30'
-            }`}
-          >
-            <span className="text-lg">💳</span>
-            <span className="font-medium">Subscriptions</span>
-          </Link>
+      {/* Navigation */}
+      <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+        <div className="px-4 mb-2">
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Overview
+          </span>
         </div>
 
-        <div className="mt-8">
-          <div className="text-xs uppercase text-gray-500 font-semibold mb-3 px-3">Settings</div>
-          <button
-            onClick={onLogout}
-            className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors w-full"
-          >
-            <span className="text-lg">🚪</span>
-            <span className="font-medium">Log Out</span>
-          </button>
-        </div>
+        {isOwnerRoute ? (
+          <>
+            <NavItem to="/owner/dashboard" icon={LayoutDashboard} label="Dashboard" />
+            <NavItem to="/owner/add-station" icon={PlusCircle} label="Add Station" />
+            <NavItem to="/owner/profile" icon={User} label="Profile" />
+            <NavItem to="/owner/subscription" icon={CreditCard} label="Subscription" />
+          </>
+        ) : (
+          <>
+            <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+            <NavItem to="/stations" icon={MapPin} label="Stations" />
+            <NavItem to="/owners" icon={Users} label="Owners" />
+            <NavItem to="/subscriptions" icon={CreditCard} label="Subscriptions" />
+          </>
+        )}
+      </nav>
+
+      {/* Footer / Logout */}
+      <div className="p-4 border-t border-slate-100">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group"
+        >
+          <LogOut className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+          <span className="font-medium">Sign Out</span>
+        </button>
       </div>
     </aside>
   );

@@ -2,51 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #0f172a;
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
 }
 
-/* Custom Scrollbar for Dark Theme */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/40;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/50;
+  }
+
+  .glass-input {
+    @apply bg-white/50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 transition-all duration-300;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-lime-600;
+  }
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  @apply bg-slate-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 5px;
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+/* Animations */
+.animate-enter {
+  animation: enter 0.5s ease-out forwards;
 }
 
-/* Smooth Transitions */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 
-/* Glass Morphism Effect */
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Gradient Text */
-.gradient-text {
-  background: linear-gradient(to right, #60a5fa, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
