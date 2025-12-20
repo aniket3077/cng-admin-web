@@ -12,6 +12,12 @@ import AddStation from './pages/AddStation';
 import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
 import LandingPage from './pages/LandingPage';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('adminToken');
@@ -31,6 +37,15 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+
+          {/* Public Pages */}
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<Terms />} />
+
 
           {/* Admin Routes */}
           <Route

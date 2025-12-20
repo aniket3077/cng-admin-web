@@ -25,6 +25,22 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-lime-600;
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
 }
 
 /* Custom Scrollbar */
@@ -41,7 +57,300 @@
   @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
 }
 
-/* Animations */
+/* Enhanced Animations */
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3D Float Animation */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+
+  33% {
+    transform: translateY(-15px) translateX(10px);
+  }
+
+  66% {
+    transform: translateY(-5px) translateX(-10px);
+  }
+}
+
+@keyframes float-delayed {
+
+  0%,
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+
+  33% {
+    transform: translateY(-20px) translateX(-8px);
+  }
+
+  66% {
+    transform: translateY(-8px) translateX(8px);
+  }
+}
+
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translateY(0px) translateX(0px);
+  }
+
+  50% {
+    transform: translateY(-12px) translateX(5px);
+  }
+}
+
+/* 3D Phone Float */
+@keyframes float-3d {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+
+  50% {
+    transform: translateY(-20px) rotateX(2deg) rotateY(-2deg);
+  }
+}
+
+/* Rotating Ring */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulse Animations */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulse-gentle {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Bouncing Pin */
+@keyframes bounce-pin {
+
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+/* Scan Line Effect */
+@keyframes scan-line {
+  0% {
+    top: -100%;
+  }
+
+  100% {
+    top: 100%;
+  }
+}
+
+/* Floating Particles */
+@keyframes float-particle {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.3;
+  }
+
+  25% {
+    transform: translate(20px, -20px);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translate(15px, -40px);
+    opacity: 0.8;
+  }
+
+  75% {
+    transform: translate(-10px, -30px);
+    opacity: 0.4;
+  }
+}
+
+@keyframes float-particle-delayed {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.2;
+  }
+
+  33% {
+    transform: translate(-25px, -25px);
+    opacity: 0.7;
+  }
+
+  66% {
+    transform: translate(-15px, -35px);
+    opacity: 0.5;
+  }
+}
+
+@keyframes float-particle-slow {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: translate(10px, -50px) scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+/* Apply Animations with Delays */
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 5s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-3d-float {
+  animation: float-3d 6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+.animate-bounce-pin {
+  animation: bounce-pin 2s ease-in-out infinite;
+}
+
+.animate-scan-line {
+  animation: scan-line 4s linear infinite;
+}
+
+.animate-float-particle {
+  animation: float-particle 6s ease-in-out infinite;
+}
+
+.animate-float-particle-delayed {
+  animation: float-particle-delayed 7s ease-in-out infinite;
+}
+
+.animate-float-particle-slow {
+  animation: float-particle-slow 8s ease-in-out infinite;
+}
+
+/* 3D Transform Utilities */
+.rotate-y-12 {
+  transform: rotateY(12deg);
+}
+
+.rotate-x-3 {
+  transform: rotateX(3deg);
+}
+
+.transform-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
+}
+
 .animate-enter {
   animation: enter 0.5s ease-out forwards;
 }
