@@ -21,31 +21,59 @@ export default function Dashboard() {
   }, []);
 
   const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [stationsData, ownersData, pendingStationsData, ticketsData] = await Promise.all([
-        adminApi.getStations(1, '', undefined, ''),
-        adminApi.getOwners(1, 1),
-        adminApi.getStations(1, '', undefined, 'pending'),
-        adminApi.getTickets(1, { status: 'open' })
-      ]);
+    setLoading(true);
 
-      setStats({
-        totalStations: stationsData.total || 0,
-        totalOwners: ownersData.pagination?.total || 0,
-        pendingStations: pendingStationsData.total || 0,
-        openTickets: ticketsData.pagination?.total || 0
-      });
+    // Helper to catch errors validation
+    const fetchData = async () => {
+      try {
+        // Fetch individually to isolate errors
+        let stationsRes: any = { total: 0, stations: [] };
+        try {
+          stationsRes = await adminApi.getStations(1, '', undefined, '');
+        } catch (e) {
+          console.error('Error fetching stations:', e);
+        }
 
-      // Set recent data
-      setRecentStations(stationsData.stations.slice(0, 5));
-      setRecentTickets(ticketsData.tickets.slice(0, 5));
+        let ownersRes: any = { pagination: { total: 0 } };
+        try {
+          ownersRes = await adminApi.getOwners(1, 1);
+        } catch (e) {
+          console.error('Error fetching owners:', e);
+        }
 
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
+        let pendingRes: any = { total: 0 };
+        try {
+          pendingRes = await adminApi.getStations(1, '', undefined, 'pending');
+        } catch (e) {
+          console.error('Error fetching pending stations:', e);
+        }
+
+        let ticketsRes: any = { pagination: { total: 0 }, tickets: [] };
+        try {
+          ticketsRes = await adminApi.getTickets(1, { status: 'open' });
+        } catch (e) {
+          console.error('Error fetching tickets:', e);
+        }
+
+        setStats({
+          totalStations: stationsRes?.total || 0,
+          totalOwners: ownersRes?.pagination?.total || 0,
+          pendingStations: pendingRes?.total || 0,
+          openTickets: ticketsRes?.pagination?.total || 0
+        });
+
+        // Set recent data with safety checks
+        setRecentStations(Array.isArray(stationsRes?.stations) ? stationsRes.stations.slice(0, 5) : []);
+        setRecentTickets(Array.isArray(ticketsRes?.tickets) ? ticketsRes.tickets.slice(0, 5) : []);
+
+      } catch (error) {
+        console.error('Critical dashboard error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   };
 
   const StatCard = ({ title, value, icon: Icon, color, onClick }: any) => (
