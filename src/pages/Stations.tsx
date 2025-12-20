@@ -109,6 +109,25 @@ export default function Stations() {
     } catch (error) { console.error(error); alert('Failed to reject'); }
   };
 
+  const handleDelete = async (stationId: string) => {
+    if (!confirm('Are you sure you want to PERMANENTLY DELETE this station? This action cannot be undone.')) return;
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/admin/stations`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: stationId }),
+      });
+      if (!response.ok) throw new Error('Failed to delete station');
+      fetchStations();
+      if (selectedStation?.id === stationId) setShowModal(false);
+    } catch (error) {
+      console.error('Error deleting station:', error);
+      alert('Failed to delete station');
+    }
+  };
+
+
 
 
   const getStatusBadge = (status: string) => {
