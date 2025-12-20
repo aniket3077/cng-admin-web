@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -177,6 +177,25 @@ export const adminApi = {
     return response.data;
   },
 
+  logout: async () => {
+    try {
+      await api.post('/admin/logout');
+    } finally {
+      localStorage.removeItem('adminToken');
+    }
+  },
+
+  signup: async (data: { name: string; email: string; phone: string; password: string; stationName?: string; address?: string; companyName?: string }) => {
+    const response = await axios.post(`${API_BASE_URL}/auth/subscriber/signup`, {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      companyName: data.stationName || data.companyName,
+    });
+    return response.data;
+  },
+
   // Station Management
   getStations: async (page = 1, search = '', verified?: boolean, approvalStatus?: string) => {
     const params: any = { page };
@@ -238,7 +257,7 @@ export const adminApi = {
   },
 
   addTicketReply: async (ticketId: string, message: string, isInternal: boolean = false) => {
-    const response = await api.post('/admin/support/reply', { ticketId, message, isInternal });
+    const response = await api.post('/admin/support', { ticketId, message, isInternal });
     return response.data;
   },
 

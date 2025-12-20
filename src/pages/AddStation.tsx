@@ -1,15 +1,47 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { adminApi } from '../services/api';
-import Sidebar from '../components/Sidebar';
-import TopBar from '../components/TopBar';
+import { useNavigate, Link } from 'react-router-dom';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
+
+// Convert DMS (Degrees Minutes Seconds) to Decimal Degrees
+function dmsToDecimal(dmsString: string): { lat: number; lng: number } | null {
+  // Pattern to match formats like: 19°51'00.2"N 75°19'51.5"E
+  const pattern = /(\d+)[°](\d+)['](\d+\.?\d*)["]?\s*([NS])\s*(\d+)[°](\d+)['](\d+\.?\d*)["]?\s*([EW])/i;
+  const match = dmsString.match(pattern);
+  
+  if (!match) {
+    // Try simpler format: 19.850056, 75.330972 (already decimal)
+    const decimalPattern = /(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/;
+    const decimalMatch = dmsString.match(decimalPattern);
+    if (decimalMatch) {
+      return {
+        lat: parseFloat(decimalMatch[1]),
+        lng: parseFloat(decimalMatch[2]),
+      };
+    }
+    return null;
+  }
+  
+  const latDeg = parseInt(match[1]);
+  const latMin = parseInt(match[2]);
+  const latSec = parseFloat(match[3]);
+  const latDir = match[4].toUpperCase();
+  
+  const lngDeg = parseInt(match[5]);
+  const lngMin = parseInt(match[6]);
+  const lngSec = parseFloat(match[7]);
+  const lngDir = match[8].toUpperCase();
+  
+  let lat = latDeg + latMin / 60 + latSec / 3600;
+  let lng = lngDeg + lngMin / 60 + lngSec / 3600;
+  
+  if (latDir === 'S') lat = -lat;
+  if (lngDir === 'W') lng = -lng;
+  
+  return { lat, lng };
+}
 
 export default function AddStation() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [geocoding, setGeocoding] = useState(false);
-
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -17,386 +49,378 @@ export default function AddStation() {
     state: '',
     postalCode: '',
     phone: '',
-    latitude: '',
-    longitude: '',
-    fuelTypes: [] as string[],
-    openingHours: '',
-    amenities: '',
-    subscriptionPlan: 'free',
+    coordinates: '',
+    lat: '',
+    lng: '',
+    fuelTypes: ['CNG'],
+    openingHours: '24/7',
+    amenities: [] as string[],
   });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const fuelOptions = ['Petrol', 'Diesel', 'CNG', 'LPG', 'EV'];
+  const amenityOptions = [
+    'Restroom',
+    'Air/Water',
+    'Food Court',
+    'ATM',
+    'Parking',
+    'EV Charging',
+    'Car Wash',
+    'Convenience Store',
+  ];
 
-  const handleFuelToggle = (fuel: string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Auto-convert DMS coordinates
+    if (name === 'coordinates' && value) {
+      const converted = dmsToDecimal(value);
+      if (converted) {
+        setFormData(prev => ({
+          ...prev,
+          coordinates: value,
+          lat: converted.lat.toFixed(6),
+          lng: converted.lng.toFixed(6),
+        }));
+        return;
+      }
+    }
+    
     setFormData({
       ...formData,
-      fuelTypes: formData.fuelTypes.includes(fuel)
-        ? formData.fuelTypes.filter((f) => f !== fuel)
-        : [...formData.fuelTypes, fuel],
+      [name]: value,
     });
   };
 
-  const handleGeocode = async () => {
-    if (!formData.address) {
-      alert('Please enter an address first');
-      return;
-    }
-
-    setGeocoding(true);
-    try {
-      const data = await adminApi.geocode(formData.address);
-      if (data.results && data.results[0]) {
-        const result = data.results[0];
-        const location = result.geometry.location;
-
-        // Extract address components
-        const components = result.address_components;
-        let city = '';
-        let state = '';
-        let postalCode = '';
-
-        components.forEach((comp: any) => {
-          if (comp.types.includes('locality')) city = comp.long_name;
-          if (comp.types.includes('administrative_area_level_1'))
-            state = comp.short_name;
-          if (comp.types.includes('postal_code')) postalCode = comp.long_name;
-        });
-
-        setFormData({
-          ...formData,
-          latitude: location.lat.toString(),
-          longitude: location.lng.toString(),
-          address: result.formatted_address,
-          city: city || formData.city,
-          state: state || formData.state,
-          postalCode: postalCode || formData.postalCode,
-        });
-      } else {
-        alert('Location not found');
-      }
-    } catch (error) {
-      alert('Geocoding failed');
-    } finally {
-      setGeocoding(false);
-    }
+  const handleAmenityToggle = (amenity: string) => {
+    setFormData(prev => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter(a => a !== amenity)
+        : [...prev.amenities, amenity],
+    }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
-    if (formData.fuelTypes.length === 0) {
-      setError('Please select at least one fuel type');
-      return;
-    }
-
-    if (!formData.latitude || !formData.longitude) {
-      setError('Please set location coordinates');
+    // Validation
+    if (!formData.name || !formData.address || !formData.city || !formData.state) {
+      setError('Please fill in all required fields');
       return;
     }
 
     setLoading(true);
+
     try {
-      await adminApi.createStation({
-        name: formData.name,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        postalCode: formData.postalCode,
-        phone: formData.phone || undefined,
-        lat: parseFloat(formData.latitude),
-        lng: parseFloat(formData.longitude),
-        fuelTypes: formData.fuelTypes.join(','),
-        openingHours: formData.openingHours || undefined,
-        amenities: formData.amenities || undefined,
-        subscriptionType: formData.subscriptionPlan,
+      const token = localStorage.getItem('ownerToken');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/owner/stations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          postalCode: formData.postalCode,
+          phone: formData.phone,
+          lat: formData.lat ? parseFloat(formData.lat) : null,
+          lng: formData.lng ? parseFloat(formData.lng) : null,
+          fuelTypes: formData.fuelTypes,
+          openingHours: formData.openingHours,
+          amenities: formData.amenities,
+        }),
       });
-      navigate('/dashboard');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add station');
+      }
+
+      setSuccess('Station added successfully! It will be reviewed by admin.');
+      
+      // Update owner data in localStorage with new station
+      const ownerData = localStorage.getItem('ownerUser');
+      if (ownerData) {
+        const owner = JSON.parse(ownerData);
+        owner.stations = [...(owner.stations || []), data.station];
+        localStorage.setItem('ownerUser', JSON.stringify(owner));
+      }
+
+      setTimeout(() => navigate('/owner/dashboard'), 2000);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create station');
+      setError(err.message || 'Failed to add station. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/login');
-  };
-
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar onLogout={handleLogout} />
-      
-      <div className="flex-1 ml-64">
-        <TopBar />
-        <main className="max-w-4xl mx-auto px-6 py-8">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-4 mb-2">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                ← Back
-              </button>
-              <h2 className="text-3xl font-bold text-gray-900">Add New Station</h2>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-3">
+              <Link to="/owner/dashboard" className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <span className="text-xl font-bold text-gray-900">CNG Bharat</span>
+              </Link>
             </div>
-            <p className="text-gray-600">Add a new fuel station to the network.</p>
+            <Link
+              to="/owner/dashboard"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Dashboard
+            </Link>
           </div>
+        </div>
+      </header>
 
-          <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-8 space-y-6 shadow-sm">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
+      {/* Main Content */}
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Add New Station</h1>
+          <p className="text-gray-600 mb-6">Fill in the details to register your CNG station.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Station Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Address *
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="flex-1 px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={handleGeocode}
-                  disabled={geocoding}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 disabled:opacity-50 transition-all font-medium"
-                >
-                  {geocoding ? 'Searching...' : 'Search'}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                City *
-              </label>
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                State *
-              </label>
-              <input
-                type="text"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Postal Code
-              </label>
-              <input
-                type="text"
-                value={formData.postalCode}
-                onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Latitude *
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.latitude}
-                onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Longitude *
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={formData.longitude}
-                onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-          </div>
-
-          {formData.latitude && formData.longitude && (
-            <div className="text-sm text-gray-400">
-              <a
-                href={`https://www.google.com/maps?q=${formData.latitude},${formData.longitude}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 hover:underline"
-              >
-                View on Google Maps →
-              </a>
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+              {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Fuel Types *
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {fuelOptions.map((fuel) => (
-                <button
-                  key={fuel}
-                  type="button"
-                  onClick={() => handleFuelToggle(fuel)}
-                  className={`px-4 py-2 rounded-xl border-2 transition-all font-medium ${
-                    formData.fuelTypes.includes(fuel)
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-gray-900/50 text-gray-300 border-gray-700 hover:border-blue-400'
-                  }`}
-                >
-                  {fuel}
-                </button>
-              ))}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600">
+              {success}
             </div>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Opening Hours
-            </label>
-            <input
-              type="text"
-              value={formData.openingHours}
-              onChange={(e) => setFormData({ ...formData, openingHours: e.target.value })}
-              placeholder="e.g., Mon-Fri: 6AM-10PM, Sat-Sun: 24/7"
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Station Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Station Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter station name"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Amenities
-            </label>
-            <input
-              type="text"
-              value={formData.amenities}
-              onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
-              placeholder="e.g., Restrooms, ATM, Car Wash, Cafe"
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
+            {/* Address */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                rows={2}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter full address"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-3">
-              Subscription Plan *
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, subscriptionPlan: 'free' })}
-                className={`p-4 border-2 rounded-xl text-left transition-all ${
-                  formData.subscriptionPlan === 'free'
-                    ? 'border-blue-500 bg-blue-500/20'
-                    : 'border-gray-700 bg-gray-900/50 hover:border-gray-600'
-                }`}
+            {/* City & State */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="City"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  State <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="State"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Postal Code & Phone */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="PIN Code"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Station Phone
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="Station contact number"
+                />
+              </div>
+            </div>
+
+            {/* Coordinates - DMS or Decimal */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                GPS Coordinates
+              </label>
+              <input
+                type="text"
+                name="coordinates"
+                value={formData.coordinates}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                placeholder={`e.g., 19°51'00.2"N 75°19'51.5"E or 19.850056, 75.330972`}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Paste from Google Maps (DMS or decimal format)
+              </p>
+            </div>
+
+            {/* Converted Coordinates Display */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Latitude (Decimal)
+                </label>
+                <input
+                  type="text"
+                  name="lat"
+                  value={formData.lat}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
+                  placeholder="Auto-filled"
+                  readOnly={!!formData.coordinates}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Longitude (Decimal)
+                </label>
+                <input
+                  type="text"
+                  name="lng"
+                  value={formData.lng}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
+                  placeholder="Auto-filled"
+                  readOnly={!!formData.coordinates}
+                />
+              </div>
+            </div>
+
+            {/* Opening Hours */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Opening Hours
+              </label>
+              <select
+                name="openingHours"
+                value={formData.openingHours}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               >
-                <div className="font-bold text-lg text-white">Free</div>
-                <div className="text-sm text-gray-400 mt-1">Basic listing</div>
-                <div className="font-bold mt-2 text-white">₹0</div>
-              </button>
+                <option value="24/7">24/7 (Open all day)</option>
+                <option value="6AM-10PM">6 AM - 10 PM</option>
+                <option value="6AM-12AM">6 AM - 12 AM</option>
+                <option value="8AM-8PM">8 AM - 8 PM</option>
+              </select>
+            </div>
 
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, subscriptionPlan: 'basic' })}
-                className={`p-4 border-2 rounded-xl text-left transition-all ${
-                  formData.subscriptionPlan === 'basic'
-                    ? 'border-green-500 bg-green-500/20'
-                    : 'border-gray-700 bg-gray-900/50 hover:border-gray-600'
-                }`}
-              >
-                <div className="font-bold text-lg text-white">Basic</div>
-                <div className="text-sm text-gray-400 mt-1">Enhanced visibility</div>
-                <div className="font-bold mt-2 text-white">₹999/month</div>
-              </button>
+            {/* Amenities */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Amenities
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {amenityOptions.map((amenity) => (
+                  <button
+                    key={amenity}
+                    type="button"
+                    onClick={() => handleAmenityToggle(amenity)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      formData.amenities.includes(amenity)
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {amenity}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, subscriptionPlan: 'premium' })}
-                className={`p-4 border-2 rounded-xl text-left transition-all ${
-                  formData.subscriptionPlan === 'premium'
-                    ? 'border-purple-500 bg-purple-500/20'
-                    : 'border-gray-700 bg-gray-900/50 hover:border-gray-600'
-                }`}
+            {/* Submit Button */}
+            <div className="flex gap-4 pt-4">
+              <Link
+                to="/owner/dashboard"
+                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors text-center"
               >
-                <div className="font-bold text-lg text-white">Premium</div>
-                <div className="text-sm text-gray-400 mt-1">Priority + Analytics</div>
-                <div className="font-bold mt-2 text-white">₹9,999/year</div>
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Adding Station...' : 'Add Station'}
               </button>
             </div>
-          </div>
-
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="flex-1 px-6 py-3 border border-gray-700 rounded-xl text-gray-300 hover:bg-gray-700/50 transition-all font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all font-medium shadow-lg shadow-blue-500/25"
-            >
-              {loading ? 'Creating...' : 'Create Station'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </main>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { adminApi } from '../services/api';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -11,15 +12,63 @@ export default function Signup() {
     confirmPassword: '',
     stationName: '',
     address: '',
+    city: '',
+    state: '',
+    coordinates: '',
+    lat: null as number | null,
+    lng: null as number | null,
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Convert DMS (Degrees Minutes Seconds) to Decimal Degrees
+  const parseDMS = (dmsString: string): { lat: number; lng: number } | null => {
+    try {
+      // Match patterns like: 19°51'00.2"N 75°19'51.5"E
+      const regex = /(\d+)°(\d+)'([\d.]+)"([NS])\s+(\d+)°(\d+)'([\d.]+)"([EW])/;
+      const match = dmsString.match(regex);
+      
+      if (!match) return null;
+      
+      const [, latDeg, latMin, latSec, latDir, lngDeg, lngMin, lngSec, lngDir] = match;
+      
+      // Convert to decimal
+      let lat = parseFloat(latDeg) + parseFloat(latMin) / 60 + parseFloat(latSec) / 3600;
+      let lng = parseFloat(lngDeg) + parseFloat(lngMin) / 60 + parseFloat(lngSec) / 3600;
+      
+      // Apply direction
+      if (latDir === 'S') lat = -lat;
+      if (lngDir === 'W') lng = -lng;
+      
+      return { lat, lng };
+    } catch (error) {
+      console.error('DMS parsing error:', error);
+      return null;
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Auto-detect and convert DMS format for coordinates field
+    if (name === 'coordinates' && value.includes('°')) {
+      const parsed = parseDMS(value);
+      if (parsed) {
+        setFormData({
+          ...formData,
+          coordinates: value,
+          lat: parsed.lat,
+          lng: parsed.lng,
+        });
+        return;
+      }
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
@@ -33,33 +82,46 @@ export default function Signup() {
       return;
     }
 
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
 
-    if (formData.phone.length !== 10) {
-      setError('Please enter a valid 10-digit phone number');
+    if (formData.phone.length < 10) {
+      setError('Please enter a valid phone number');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Note: You'll need to implement this endpoint in your backend
-      await adminApi.signup({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
-        stationName: formData.stationName,
-        address: formData.address,
+      const response = await fetch(`${API_URL}/auth/subscriber/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          stationName: formData.stationName,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          lat: formData.lat,
+          lng: formData.lng,
+        }),
       });
       
-      alert('Registration successful! Please wait for admin approval.');
-      navigate('/login');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || data.details?.[0]?.message || 'Registration failed');
+      }
+      
+      setSuccess('Registration successful! Your account has been created.');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -81,15 +143,21 @@ export default function Signup() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Join Fuely Network
+            Join CNG Bharat
           </h1>
-          <p className="text-gray-600 mt-2">Register your fuel station</p>
+          <p className="text-gray-600 mt-2">Register as a Station Owner</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
               {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl text-sm">
+              {success}
             </div>
           )}
 
@@ -185,7 +253,7 @@ export default function Signup() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Station Name *
+                  Station Name
                 </label>
                 <input
                   type="text"
@@ -193,24 +261,71 @@ export default function Signup() {
                   value={formData.stationName}
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                  placeholder="ABC Fuel Station"
-                  required
+                  placeholder="ABC CNG Station"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Station Address *
+                  Station Address
                 </label>
-                <textarea
+                <input
+                  type="text"
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all resize-none"
-                  placeholder="Enter complete station address with city, state and PIN code"
-                  required
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  placeholder="Street address"
                 />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                    placeholder="Mumbai"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                    placeholder="Maharashtra"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Coordinates (GPS Location)
+                  <span className="text-gray-500 text-xs ml-2">Format: 19°51'00.2"N 75°19'51.5"E</span>
+                </label>
+                <input
+                  type="text"
+                  name="coordinates"
+                  value={formData.coordinates}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all font-mono text-sm"
+                  placeholder={`19°51'00.2"N 75°19'51.5"E`}
+                />
+                {formData.lat && formData.lng && (
+                  <p className="mt-2 text-sm text-green-600">
+                    ✓ Converted: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
+                  </p>
+                )}
               </div>
 
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
