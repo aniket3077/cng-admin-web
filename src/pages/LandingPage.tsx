@@ -398,7 +398,7 @@ export default function LandingPage() {
                                 <div className="relative z-10 w-full h-full bg-slate-900 rounded-[3.5rem] p-3 shadow-[0_0_0_4px_#334155,0_0_0_8px_#1e293b,0_20px_50px_-12px_rgba(0,0,0,0.6)] ml-1">
 
                                     {/* Screen Content */}
-                                    <div className="relative w-full h-full bg-slate-50 rounded-[2.8rem] overflow-hidden border-[3px] border-slate-900">
+                                    <div className="relative w-full h-full bg-slate-950 rounded-[2.8rem] overflow-hidden border-[3px] border-slate-900">
 
                                         {/* Dynamic Island Area */}
                                         <div className="absolute top-0 w-full h-14 z-50 flex justify-center items-start pt-3 pointer-events-none">
@@ -414,41 +414,41 @@ export default function LandingPage() {
                                         </div>
 
                                         {/* Status Bar Elements (Fake) */}
-                                        <div className="absolute top-3 left-8 z-40 text-[10px] font-bold text-slate-900">9:41</div>
+                                        <div className="absolute top-3 left-8 z-40 text-[10px] font-bold text-white">9:41</div>
                                         <div className="absolute top-4 right-8 z-40 flex gap-1.5">
-                                            <div className="w-4 h-2.5 bg-slate-900 rounded-[2px]" />
-                                            <div className="w-0.5 h-1 bg-slate-900" />
+                                            <div className="w-4 h-2.5 bg-white rounded-[2px]" />
+                                            <div className="w-0.5 h-1 bg-white" />
                                         </div>
 
-                                        {/* Background Map (High Contrast for Visibility) */}
-                                        <div className="absolute inset-0 z-0 bg-[#e8ecf1]">
-                                            {/* Reliable Map Texture */}
+                                        {/* Background Map (Dark Theme) */}
+                                        <div className="absolute inset-0 z-0 bg-slate-900">
+                                            {/* Reliable Map Texture - Inverted for Dark Mode Effect */}
                                             <img
                                                 src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop"
                                                 alt="Map Background"
-                                                className="w-full h-full object-cover opacity-60 mix-blend-multiply contrast-125"
+                                                className="w-full h-full object-cover opacity-20 mix-blend-screen grayscale"
                                             />
                                             {/* India Outline Hint (CSS Shape) */}
-                                            <div className="absolute inset-0 bg-blue-500/5" />
+                                            <div className="absolute inset-0 bg-blue-500/10 mix-blend-overlay" />
                                         </div>
 
                                         {/* UI Header */}
                                         <div className="absolute top-14 left-4 right-4 z-20">
-                                            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3 shadow-sm border border-white/50">
+                                            <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-3 shadow-lg border border-white/10">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 overflow-hidden">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
                                                         <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="User" className="w-full h-full object-cover" />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <div className="h-2 w-20 bg-slate-200 rounded mb-1" />
-                                                        <div className="h-3 w-32 bg-slate-900/10 rounded" />
+                                                        <div className="h-2 w-20 bg-slate-700 rounded mb-1" />
+                                                        <div className="h-3 w-32 bg-slate-800 rounded" />
                                                     </div>
-                                                    <div className="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary-600">
+                                                    <div className="w-8 h-8 rounded-full bg-primary-900/30 flex items-center justify-center text-primary-400 border border-primary-500/20">
                                                         <Zap className="w-4 h-4 fill-current" />
                                                     </div>
                                                 </div>
                                                 {/* Search Bar */}
-                                                <div className="mt-3 bg-slate-50 border border-slate-100 rounded-xl p-2 flex items-center gap-2">
+                                                <div className="mt-3 bg-black/40 border border-white/10 rounded-xl p-2 flex items-center gap-2">
                                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                                     <span className="text-[10px] text-slate-400">Search India...</span>
                                                 </div>
@@ -488,20 +488,20 @@ export default function LandingPage() {
 
                                         {/* Bottom Sheet UI */}
                                         <div className="absolute bottom-6 left-4 right-4 z-30">
-                                            <div className="bg-white rounded-3xl p-4 shadow-[0_8px_40px_-10px_rgba(0,0,0,0.2)]">
+                                            <div className="bg-slate-900/95 backdrop-blur-xl rounded-3xl p-4 shadow-[0_8px_40px_-10px_rgba(0,0,0,0.5)] border border-white/10">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div>
-                                                        <h4 className="text-sm font-bold text-slate-900">Nearest Station</h4>
+                                                        <h4 className="text-sm font-bold text-white">Nearest Station</h4>
                                                         <div className="flex items-center gap-1.5 mt-1">
-                                                            <div className="px-1.5 py-0.5 bg-green-100 rounded text-[9px] font-bold text-green-700">OPEN</div>
-                                                            <span className="text-[10px] text-slate-500">2.5 km away</span>
+                                                            <div className="px-1.5 py-0.5 bg-green-900/30 border border-green-500/20 rounded text-[9px] font-bold text-green-400">OPEN</div>
+                                                            <span className="text-[10px] text-slate-400">2.5 km away</span>
                                                         </div>
                                                     </div>
-                                                    <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white">
+                                                    <div className="w-10 h-10 rounded-2xl bg-black flex items-center justify-center text-white border border-slate-800">
                                                         <MapPin className="w-5 h-5" />
                                                     </div>
                                                 </div>
-                                                <button className="w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-2xl text-xs font-bold shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98]">
+                                                <button className="w-full py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl text-xs font-bold shadow-lg shadow-primary-500/10 transition-all active:scale-[0.98]">
                                                     Start Navigation
                                                 </button>
                                             </div>
