@@ -230,7 +230,7 @@ export const adminApi = {
   },
 
   deleteStation: async (id: string) => {
-    const response = await api.delete('/admin/stations', { data: { id } });
+    const response = await api.delete('/admin/stations?id=' + id);
     return response.data;
   },
 
