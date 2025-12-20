@@ -172,14 +172,14 @@ export default function Subscription() {
     <div className="space-y-12">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-white">Choose Your Plan</h1>
-        <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        <h1 className="text-4xl font-bold text-slate-800">Choose Your Plan</h1>
+        <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
           Unlock the full potential of CNG Bharat. List your stations, track real-time availability, and grow your business.
         </p>
       </div>
 
       {error && (
-        <div className="max-w-md mx-auto p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-center flex items-center justify-center gap-2">
+        <div className="max-w-md mx-auto p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-center flex items-center justify-center gap-2">
           <Shield className="w-5 h-5" />
           {error}
         </div>
@@ -190,9 +190,9 @@ export default function Subscription() {
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative glass-card rounded-3xl p-8 flex flex-col transition-all duration-300 hover:transform hover:-translate-y-2 group ${plan.popular
-                ? 'border-primary-500 shadow-2xl shadow-primary-500/20 bg-gradient-to-b from-slate-900/80 to-slate-900/90'
-                : 'border-white/10 hover:border-white/20'
+            className={`relative rounded-3xl p-8 flex flex-col transition-all duration-300 hover:transform hover:-translate-y-2 group ${plan.popular
+              ? 'bg-white border-2 border-primary-500 shadow-2xl shadow-primary-500/10'
+              : 'bg-white border border-slate-200 hover:border-primary-200 hover:shadow-xl hover:shadow-slate-200/50'
               }`}
           >
             {plan.popular && (
@@ -204,9 +204,9 @@ export default function Subscription() {
             )}
 
             <div className="mb-8">
-              <h3 className={`text-xl font-bold mb-2 ${plan.popular ? 'text-white' : 'text-slate-200'}`}>{plan.name}</h3>
+              <h3 className={`text-xl font-bold mb-2 ${plan.popular ? 'text-primary-600' : 'text-slate-800'}`}>{plan.name}</h3>
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-white">₹{plan.price.toLocaleString()}</span>
+                <span className="text-4xl font-bold text-slate-800">₹{plan.price.toLocaleString()}</span>
                 <span className="text-slate-500 italic">/{plan.duration}</span>
               </div>
             </div>
@@ -214,11 +214,11 @@ export default function Subscription() {
             <ul className="space-y-4 mb-8 flex-1">
               {plan.features.map((feature, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-primary-500/20 text-primary-400' : 'bg-slate-800 text-slate-400'
+                  <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.popular ? 'bg-primary-50 text-primary-600' : 'bg-slate-100 text-slate-500'
                     }`}>
                     <Check className="w-3 h-3" />
                   </div>
-                  <span className="text-slate-300 text-sm">{feature}</span>
+                  <span className="text-slate-600 text-sm">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -227,8 +227,8 @@ export default function Subscription() {
               onClick={() => handleSubscribe(plan.id)}
               disabled={loading && selectedPlan === plan.id}
               className={`w-full py-4 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${plan.popular
-                  ? 'bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white shadow-lg shadow-primary-500/25'
-                  : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
+                ? 'bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white shadow-lg shadow-primary-500/25'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {loading && selectedPlan === plan.id ? (
@@ -249,31 +249,31 @@ export default function Subscription() {
 
       {/* FAQ / Info Section */}
       <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8 pt-8">
-        <div className="glass-card p-6 rounded-2xl border border-white/5">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-500/10 rounded-xl mt-1">
-              <HelpCircle className="w-6 h-6 text-blue-400" />
+            <div className="p-3 bg-blue-50 rounded-xl mt-1 text-blue-600">
+              <HelpCircle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white mb-2">Need Custom Solutions?</h3>
-              <p className="text-slate-400 text-sm leading-relaxed mb-4">
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Need Custom Solutions?</h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-4">
                 Have multiple stations or specific enterprise needs? We can tailor a plan just for you.
               </p>
-              <a href="tel:+919876543210" className="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-2 transition-colors">
+              <a href="tel:+919876543210" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-2 transition-colors">
                 <Phone className="w-4 h-4" /> Contact Sales
               </a>
             </div>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/5">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-emerald-500/10 rounded-xl mt-1">
-              <Shield className="w-6 h-6 text-emerald-400" />
+            <div className="p-3 bg-emerald-50 rounded-xl mt-1 text-emerald-600">
+              <Shield className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white mb-2">Safe & Secure</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Safe & Secure</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">
                 Secure payments via Razorpay. Cancel anytime. 24/7 dedicated support for premium partners.
               </p>
             </div>

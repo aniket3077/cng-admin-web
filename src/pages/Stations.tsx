@@ -145,6 +145,8 @@ export default function Stations() {
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
+            id="stationSearch"
+            name="stationSearch"
             type="text"
             placeholder="Search stations by name, city..."
             value={searchTerm}
@@ -156,6 +158,8 @@ export default function Stations() {
 
         <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
           <select
+            id="stationStatusFilter"
+            name="stationStatusFilter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter by Status"
@@ -168,6 +172,8 @@ export default function Stations() {
           </select>
 
           <select
+            id="stationCngFilter"
+            name="stationCngFilter"
             value={cngFilter}
             onChange={(e) => setCngFilter(e.target.value)}
             aria-label="Filter by CNG Availability"

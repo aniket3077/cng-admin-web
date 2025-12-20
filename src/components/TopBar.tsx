@@ -22,6 +22,8 @@ export default function TopBar({
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
             <input
+              id="topbarSearch"
+              name="topbarSearch"
               type="text"
               placeholder={searchPlaceholder}
               value={searchValue}

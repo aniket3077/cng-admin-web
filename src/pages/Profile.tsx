@@ -305,22 +305,22 @@ export default function Profile() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white">Profile</h1>
-        <p className="text-slate-400 mt-1">Manage your account and station information</p>
+        <h1 className="text-3xl font-bold text-slate-800">Profile</h1>
+        <p className="text-slate-500 mt-1">Manage your account and station information</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Profile Card - Takes 2 columns */}
-        <div className="lg:col-span-2 glass-card p-8 rounded-2xl border border-white/10 shadow-xl space-y-8">
+        <div className="lg:col-span-2 glass-card p-8 rounded-2xl border border-white/60 shadow-xl space-y-8">
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-700/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-200">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-primary-500/30">
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-primary-500/30">
                 {subscriberData?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="text-center sm:text-left">
-                <h2 className="text-2xl font-bold text-white mb-1">{subscriberData?.name}</h2>
-                <div className="flex items-center gap-2 text-slate-400 justify-center sm:justify-start">
+                <h2 className="text-2xl font-bold text-slate-800 mb-1">{subscriberData?.name}</h2>
+                <div className="flex items-center gap-2 text-slate-500 justify-center sm:justify-start">
                   <Mail className="w-4 h-4" />
                   <span>{subscriberData?.email}</span>
                 </div>
@@ -347,7 +347,7 @@ export default function Profile() {
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm text-slate-400">Full Name</label>
+                <label htmlFor="name" className="text-sm text-slate-600">Full Name</label>
                 <input
                   id="name"
                   type="text"
@@ -355,13 +355,13 @@ export default function Profile() {
                   value={formData.name}
                   onChange={handleChange}
                   disabled={!editing}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="companyName" className="text-sm text-slate-400">Company Name</label>
+                <label htmlFor="companyName" className="text-sm text-slate-600">Company Name</label>
                 <div className="relative">
-                  <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     id="companyName"
                     type="text"
@@ -369,14 +369,14 @@ export default function Profile() {
                     value={formData.companyName}
                     onChange={handleChange}
                     disabled={!editing}
-                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm text-slate-400">Phone</label>
+                <label htmlFor="phone" className="text-sm text-slate-600">Phone</label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     id="phone"
                     type="tel"
@@ -384,13 +384,13 @@ export default function Profile() {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={!editing}
-                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="h-px bg-slate-700/50 my-6"></div>
+            <div className="h-px bg-slate-200 my-6"></div>
 
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <MapPin className="w-4 h-4" /> Station Location
@@ -398,7 +398,7 @@ export default function Profile() {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="address" className="text-sm text-slate-400">Address</label>
+                <label htmlFor="address" className="text-sm text-slate-600">Address</label>
                 <input
                   id="address"
                   type="text"
@@ -406,12 +406,12 @@ export default function Profile() {
                   value={formData.address}
                   onChange={handleChange}
                   disabled={!editing}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="city" className="text-sm text-slate-400">City</label>
+                  <label htmlFor="city" className="text-sm text-slate-600">City</label>
                   <input
                     id="city"
                     type="text"
@@ -419,11 +419,11 @@ export default function Profile() {
                     value={formData.city}
                     onChange={handleChange}
                     disabled={!editing}
-                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="state" className="text-sm text-slate-400">State</label>
+                  <label htmlFor="state" className="text-sm text-slate-600">State</label>
                   <input
                     id="state"
                     type="text"
@@ -431,16 +431,16 @@ export default function Profile() {
                     value={formData.state}
                     onChange={handleChange}
                     disabled={!editing}
-                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="lat" className="text-sm text-slate-400">Latitude</label>
+                  <label htmlFor="lat" className="text-sm text-slate-600">Latitude</label>
                   <div className="relative">
-                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       id="lat"
                       type="text"
@@ -448,15 +448,15 @@ export default function Profile() {
                       value={formData.lat}
                       onChange={handleChange}
                       disabled={!editing}
-                      className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="19.8534"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="lng" className="text-sm text-slate-400">Longitude</label>
+                  <label htmlFor="lng" className="text-sm text-slate-600">Longitude</label>
                   <div className="relative">
-                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       id="lng"
                       type="text"
@@ -464,7 +464,7 @@ export default function Profile() {
                       value={formData.lng}
                       onChange={handleChange}
                       disabled={!editing}
-                      className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="75.3142"
                     />
                   </div>
@@ -495,7 +495,7 @@ export default function Profile() {
             </div>
 
             {editing && (
-              <div className="flex gap-4 pt-4 border-t border-slate-700/50">
+              <div className="flex gap-4 pt-4 border-t border-slate-200">
                 <button
                   onClick={handleSave}
                   disabled={saving}
@@ -509,7 +509,7 @@ export default function Profile() {
                     // Reset form logic... (simplified here by re-fetching or just toggling off, in real app better to reset state)
                     fetchProfile();
                   }}
-                  className="px-6 py-3 rounded-xl border border-slate-600 text-slate-300 font-medium hover:bg-slate-800 transition-colors text-sm"
+                  className="px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-100 transition-colors text-sm"
                 >
                   Cancel
                 </button>
@@ -518,26 +518,26 @@ export default function Profile() {
           </div>
 
           {/* Account Status */}
-          <div className="pt-6 border-t border-slate-700/50">
+          <div className="pt-6 border-t border-slate-200">
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Account Status</h3>
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <p className="text-xs text-slate-500 mb-1">Status</p>
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${subscriberData?.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-                  <span className="text-lg font-semibold text-white capitalize">{subscriberData?.status || 'N/A'}</span>
+                  <span className="text-lg font-semibold text-slate-800 capitalize">{subscriberData?.status || 'N/A'}</span>
                 </div>
               </div>
-              <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <p className="text-xs text-slate-500 mb-1">KYC Status</p>
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${subscriberData?.kycStatus === 'approved' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                  <span className="text-lg font-semibold text-white capitalize">{subscriberData?.kycStatus || 'N/A'}</span>
+                  <span className="text-lg font-semibold text-slate-800 capitalize">{subscriberData?.kycStatus || 'N/A'}</span>
                 </div>
               </div>
-              <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <p className="text-xs text-slate-500 mb-1">Total Stations</p>
-                <span className="text-lg font-semibold text-white">{subscriberData?.stations?.length || 0}</span>
+                <span className="text-lg font-semibold text-slate-800">{subscriberData?.stations?.length || 0}</span>
               </div>
             </div>
           </div>
@@ -547,14 +547,14 @@ export default function Profile() {
         <div className="lg:col-span-1 space-y-6">
 
           {/* CNG Availability */}
-          <div className="glass-card p-6 rounded-2xl border border-white/10 shadow-xl">
+          <div className="glass-card p-6 rounded-2xl border border-white/60 shadow-xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                 <BatteryCharging className="w-6 h-6 text-emerald-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">CNG Stock</h3>
-                <p className="text-xs text-slate-400">Update daily availability</p>
+                <h3 className="text-lg font-bold text-slate-800">CNG Stock</h3>
+                <p className="text-xs text-slate-500">Update daily availability</p>
               </div>
             </div>
 
@@ -563,7 +563,7 @@ export default function Profile() {
                 <p className="text-slate-500 mb-3">No stations found</p>
                 <button
                   onClick={() => navigate('/owner/add-station')}
-                  className="bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 px-4 py-2 rounded-lg text-sm transition-all border border-primary-500/20"
+                  className="bg-primary-50 hover:bg-primary-100 text-primary-600 px-4 py-2 rounded-lg text-sm transition-all border border-primary-100"
                 >
                   + Add Station
                 </button>
@@ -572,13 +572,13 @@ export default function Profile() {
               <div className="space-y-4">
                 {subscriberData?.stations?.map((station: any) => (
                   <div key={station.id} className={`p-4 rounded-xl border transition-all ${cngQuantity[station.id] > 0
-                    ? 'bg-emerald-500/5 border-emerald-500/20'
-                    : 'bg-red-500/5 border-red-500/20'
+                    ? 'bg-emerald-50 border-emerald-200'
+                    : 'bg-red-50 border-red-200'
                     }`}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="overflow-hidden">
-                        <p className="font-medium text-white truncate">{station.name}</p>
-                        <p className="text-xs text-slate-400">{station.city}</p>
+                        <p className="font-medium text-slate-800 truncate">{station.name}</p>
+                        <p className="text-xs text-slate-500">{station.city}</p>
                       </div>
                       <div className={`w-2 h-2 rounded-full ${cngQuantity[station.id] > 0 ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
                     </div>
@@ -590,7 +590,7 @@ export default function Profile() {
                             type="number"
                             value={tempQuantity}
                             onChange={(e) => setTempQuantity(e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg py-1.5 px-3 text-sm font-bold text-center outline-none focus:border-primary-500"
+                            className="w-full bg-white border border-slate-300 text-slate-800 rounded-lg py-1.5 px-3 text-sm font-bold text-center outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                             autoFocus
                             aria-label="New CNG Quantity"
                           />
@@ -606,7 +606,7 @@ export default function Profile() {
                         </button>
                         <button
                           onClick={() => setEditingQuantity(null)}
-                          className="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors"
+                          className="bg-slate-200 hover:bg-slate-300 text-slate-600 p-2 rounded-lg transition-colors"
                           aria-label="Cancel"
                         >
                           <X className="w-4 h-4" />
@@ -618,13 +618,13 @@ export default function Profile() {
                           setEditingQuantity(station.id);
                           setTempQuantity((cngQuantity[station.id] || 0).toString());
                         }}
-                        className="w-full bg-slate-900/50 hover:bg-slate-900 border border-slate-700 rounded-lg p-2.5 flex items-center justify-between transition-all group"
+                        className="w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg p-2.5 flex items-center justify-between transition-all group"
                       >
-                        <span className="text-xl font-bold text-white group-hover:text-primary-400 transition-colors">
+                        <span className="text-xl font-bold text-slate-700 group-hover:text-primary-600 transition-colors">
                           {cngQuantity[station.id] || 0}
                           <span className="text-xs font-normal text-slate-500 ml-1">kg</span>
                         </span>
-                        <Edit2 className="w-4 h-4 text-slate-600 group-hover:text-slate-400" />
+                        <Edit2 className="w-4 h-4 text-slate-400 group-hover:text-primary-600" />
                       </button>
                     )}
 
@@ -636,8 +636,8 @@ export default function Profile() {
                             onClick={() => handleQuantityUpdate(station.id, qty)}
                             disabled={updatingCng === station.id}
                             className={`flex-1 py-1 rounded text-[10px] font-medium transition-colors border ${qty === 0
-                              ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
-                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                              ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                              : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
                               }`}
                           >
                             {qty === 0 ? 'Empty' : `${qty}kg`}
@@ -646,7 +646,7 @@ export default function Profile() {
                       </div>
                     )}
 
-                    <div className="mt-3 pt-3 border-t border-slate-700/30 flex justify-between items-center">
+                    <div className="mt-3 pt-3 border-t border-slate-200 flex justify-between items-center">
                       <span className="text-[10px] text-slate-500">Updated {formatLastUpdated(station.cngUpdatedAt)}</span>
                       {cngQuantity[station.id] === 0 && (
                         <AlertCircle className="w-3 h-3 text-red-500" />
@@ -659,31 +659,31 @@ export default function Profile() {
           </div>
 
           {/* Quick Stats */}
-          <div className="glass-card p-6 rounded-2xl border border-white/10 shadow-xl">
+          <div className="glass-card p-6 rounded-2xl border border-white/60 shadow-xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
                 <TrendingUp className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Quick Stats</h3>
-                <p className="text-xs text-slate-400">Overview of your network</p>
+                <h3 className="text-lg font-bold text-slate-800">Quick Stats</h3>
+                <p className="text-xs text-slate-500">Overview of your network</p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-                <span className="text-sm text-slate-400">Total Stations</span>
-                <span className="font-bold text-white">{subscriberData?.stations?.length || 0}</span>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <span className="text-sm text-slate-500">Total Stations</span>
+                <span className="font-bold text-slate-800">{subscriberData?.stations?.length || 0}</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                <span className="text-sm text-emerald-400">Active Stock</span>
-                <span className="font-bold text-emerald-400">
+              <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                <span className="text-sm text-emerald-600">Active Stock</span>
+                <span className="font-bold text-emerald-600">
                   {Object.values(cngQuantity).reduce((a: number, b: number) => a + b, 0)} kg
                 </span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-red-500/10 rounded-xl border border-red-500/20">
-                <span className="text-sm text-red-400">Out of Stock</span>
-                <span className="font-bold text-red-400">
+              <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100">
+                <span className="text-sm text-red-600">Out of Stock</span>
+                <span className="font-bold text-red-600">
                   {Object.values(cngQuantity).filter((q: number) => q === 0).length}
                 </span>
               </div>

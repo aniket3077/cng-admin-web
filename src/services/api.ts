@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,10 +8,15 @@ const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const adminToken = localStorage.getItem('adminToken');
+  const ownerToken = localStorage.getItem('ownerToken');
+
+  if (adminToken) {
+    config.headers.Authorization = `Bearer ${adminToken}`;
+  } else if (ownerToken) {
+    config.headers.Authorization = `Bearer ${ownerToken}`;
   }
+
   return config;
 });
 
@@ -21,6 +26,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('adminToken');
+      localStorage.removeItem('ownerToken');
+      localStorage.removeItem('ownerUser');
       window.location.href = '/login';
     }
     return Promise.reject(error);

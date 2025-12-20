@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Phone, Lock, Navigation, Info, ArrowRight, Loader, Zap, CheckCircle } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
+import { API_BASE_URL } from '../services/api';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -96,7 +96,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/subscriber/signup`, {
+      const response = await fetch(`${API_BASE_URL}/auth/subscriber/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,7 +150,7 @@ export default function Signup() {
         <div className="grid lg:grid-cols-5 gap-8">
           {/* Form Section */}
           <div className="lg:col-span-3">
-            <div className="glass-card p-8 rounded-3xl backdrop-blur-xl border border-white/60 shadow-2xl">
+            <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-2xl p-8 rounded-3xl">
               {error && (
                 <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
                   <Info className="w-4 h-4" />
@@ -361,7 +361,7 @@ export default function Signup() {
 
           {/* Info Side Panel (Desktop only) */}
           <div className="lg:col-span-2 space-y-6 hidden lg:block">
-            <div className="glass-card p-6 rounded-3xl border border-white/60 shadow-xl">
+            <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-xl p-6 rounded-3xl">
               <h3 className="text-xl font-bold text-slate-800 mb-4">Why Partner with Us?</h3>
               <ul className="space-y-4">
                 {[
@@ -372,7 +372,7 @@ export default function Signup() {
                   "Priority support 24/7"
                 ].map((item, index) => (
                   <li key={index} className="flex items-center gap-3 text-slate-600">
-                    <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 text-primary-600">
+                    <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
                       <CheckCircle className="w-4 h-4" />
                     </div>
                     <span>{item}</span>

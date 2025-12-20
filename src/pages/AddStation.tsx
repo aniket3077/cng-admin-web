@@ -173,20 +173,20 @@ export default function AddStation() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white">Add New Station</h1>
-        <p className="text-slate-400 mt-1">Register a new CNG station under your management.</p>
+        <h1 className="text-3xl font-bold text-slate-800">Add New Station</h1>
+        <p className="text-slate-500 mt-1">Register a new CNG station under your management.</p>
       </div>
 
-      <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-xl">
+      <div className="glass-card p-8 rounded-2xl border border-white/60 shadow-xl">
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-3">
             <Info className="w-5 h-5 flex-shrink-0" />
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 flex items-center gap-3">
+          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-600 flex items-center gap-3">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
             {success}
           </div>
@@ -195,32 +195,32 @@ export default function AddStation() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Info */}
           <div className="space-y-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
               <Fuel className="w-4 h-4" /> Basic Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">Station Name <span className="text-red-400">*</span></label>
+                <label className="text-sm font-medium text-slate-600 ml-1">Station Name <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600"
+                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
                   placeholder="e.g. Green Fuel Station"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">Contact Phone</label>
+                <label className="text-sm font-medium text-slate-600 ml-1">Contact Phone</label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600"
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
                     placeholder="Station contact number"
                   />
                 </div>
@@ -230,18 +230,18 @@ export default function AddStation() {
 
           {/* Location */}
           <div className="space-y-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
               <MapPin className="w-4 h-4" /> Location Details
             </h3>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300 ml-1">Address <span className="text-red-400">*</span></label>
+              <label className="text-sm font-medium text-slate-600 ml-1">Address <span className="text-red-500">*</span></label>
               <textarea
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
                 rows={2}
-                className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600"
+                className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
                 placeholder="Street address, landmark..."
                 required
               />
@@ -249,64 +249,64 @@ export default function AddStation() {
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">City <span className="text-red-400">*</span></label>
+                <label className="text-sm font-medium text-slate-600 ml-1">City <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
+                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
                   placeholder="City"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">State <span className="text-red-400">*</span></label>
+                <label className="text-sm font-medium text-slate-600 ml-1">State <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
+                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
                   placeholder="State"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">Postal Code</label>
+                <label className="text-sm font-medium text-slate-600 ml-1">Postal Code</label>
                 <input
                   type="text"
                   name="postalCode"
                   value={formData.postalCode}
                   onChange={handleChange}
-                  className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
+                  className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all"
                   placeholder="PIN Code"
                 />
               </div>
             </div>
 
-            <div className="bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300 ml-1">GPS Coordinates</label>
+                <label className="text-sm font-medium text-slate-600 ml-1">GPS Coordinates</label>
                 <div className="relative">
-                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
                     name="coordinates"
                     value={formData.coordinates}
                     onChange={handleChange}
-                    className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-600 font-mono text-sm"
+                    className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400 font-mono text-sm"
                     placeholder={`e.g., 19°51'00.2"N 75°19'51.5"E`}
                   />
                 </div>
                 <div className="flex gap-4 mt-2">
-                  <div className="flex-1 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
-                    <span className="text-xs text-slate-500 block">Latitude</span>
-                    <span className="text-sm text-slate-300 font-mono">{formData.lat || '-'}</span>
+                  <div className="flex-1 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                    <span className="text-xs text-slate-400 block">Latitude</span>
+                    <span className="text-sm text-slate-700 font-mono">{formData.lat || '-'}</span>
                   </div>
-                  <div className="flex-1 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
-                    <span className="text-xs text-slate-500 block">Longitude</span>
-                    <span className="text-sm text-slate-300 font-mono">{formData.lng || '-'}</span>
+                  <div className="flex-1 bg-white px-3 py-2 rounded-lg border border-slate-200">
+                    <span className="text-xs text-slate-400 block">Longitude</span>
+                    <span className="text-sm text-slate-700 font-mono">{formData.lng || '-'}</span>
                   </div>
                 </div>
               </div>
@@ -315,18 +315,18 @@ export default function AddStation() {
 
           {/* Operations */}
           <div className="space-y-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
               <Clock className="w-4 h-4" /> Operations & Amenities
             </h3>
 
             <div className="space-y-2">
-              <label htmlFor="openingHours" className="text-sm font-medium text-slate-300 ml-1">Opening Hours</label>
+              <label htmlFor="openingHours" className="text-sm font-medium text-slate-600 ml-1">Opening Hours</label>
               <select
                 id="openingHours"
                 name="openingHours"
                 value={formData.openingHours}
                 onChange={handleChange}
-                className="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all cursor-pointer"
+                className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all cursor-pointer"
               >
                 <option value="24/7">24/7 (Open all day)</option>
                 <option value="6AM-10PM">6 AM - 10 PM</option>
@@ -336,7 +336,7 @@ export default function AddStation() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-medium text-slate-300 ml-1">Available Amenities</label>
+              <label className="text-sm font-medium text-slate-600 ml-1">Available Amenities</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {amenityOptions.map(({ id, icon: Icon }) => (
                   <button
@@ -344,8 +344,8 @@ export default function AddStation() {
                     type="button"
                     onClick={() => handleAmenityToggle(id)}
                     className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all border ${formData.amenities.includes(id)
-                      ? 'bg-primary-500/10 text-primary-500 border-primary-500/50 shadow-lg shadow-primary-500/20'
-                      : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-slate-200'
+                      ? 'bg-primary-50 text-primary-600 border-primary-200 shadow-lg shadow-primary-500/10'
+                      : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-800'
                       }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -357,11 +357,11 @@ export default function AddStation() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 pt-4 border-t border-slate-800">
+          <div className="flex gap-4 pt-4 border-t border-slate-200">
             <button
               type="button"
               onClick={() => navigate('/owner/dashboard')}
-              className="px-6 py-3 rounded-xl border border-slate-700 text-slate-400 font-medium hover:text-white hover:bg-slate-800 transition-colors"
+              className="px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100 transition-colors"
             >
               Cancel
             </button>

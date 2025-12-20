@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader, Zap } from 'lucide-react';
 
+import { API_BASE_URL } from '../services/api';
+
 export default function Login() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState('');
@@ -9,15 +11,13 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const endpoint = isAdmin ? '/admin/login' : '/auth/subscriber/login';
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,10 +34,14 @@ export default function Login() {
       // Store token based on user type
       if (isAdmin) {
         localStorage.setItem('adminToken', data.token);
+        localStorage.removeItem('ownerToken');
+        localStorage.removeItem('ownerUser');
         navigate('/dashboard');
       } else {
         localStorage.setItem('ownerToken', data.token);
-        navigate('/owner-dashboard');
+        localStorage.setItem('ownerUser', JSON.stringify(data.owner));
+        localStorage.removeItem('adminToken');
+        navigate('/owner/dashboard');
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -95,6 +99,8 @@ export default function Login() {
                   <Mail className="w-5 h-5" />
                 </div>
                 <input
+                  id="loginEmail"
+                  name="email"
                   type="email"
                   required
                   value={email}
@@ -114,6 +120,8 @@ export default function Login() {
                   <Lock className="w-5 h-5" />
                 </div>
                 <input
+                  id="loginPassword"
+                  name="password"
                   type="password"
                   required
                   value={password}
@@ -126,7 +134,7 @@ export default function Login() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
+                <input id="rememberMe" name="rememberMe" type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
                 <span className="text-slate-500">Remember me</span>
               </label>
               <a href="#" className="text-primary-600 hover:text-primary-700 transition-colors">Forgot password?</a>

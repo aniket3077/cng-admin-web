@@ -329,6 +329,8 @@ export default function AdminSubscriptions() {
                   </td>
                   <td className="p-6">
                     <select
+                      id={`assignPlan-${owner.id}`}
+                      name={`assignPlan-${owner.id}`}
                       onChange={(e) => {
                         if (e.target.value) {
                           handleActivateSubscription(owner.id, e.target.value);

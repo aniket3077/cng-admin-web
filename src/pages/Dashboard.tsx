@@ -56,7 +56,7 @@ export default function Dashboard() {
           <p className="text-slate-500 mt-1">Real-time insights and performance metrics.</p>
         </div>
         <div className="glass px-4 py-2 rounded-xl">
-          <select aria-label="Time period" className="bg-transparent border-none text-slate-600 focus:ring-0 text-sm cursor-pointer font-medium">
+          <select id="timePeriod" name="timePeriod" aria-label="Time period" className="bg-transparent border-none text-slate-600 focus:ring-0 text-sm cursor-pointer font-medium">
             <option className="bg-white text-slate-800">This Month</option>
             <option className="bg-white text-slate-800">Last Month</option>
             <option className="bg-white text-slate-800">This Year</option>

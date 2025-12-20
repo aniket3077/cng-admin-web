@@ -387,6 +387,8 @@ export default function OwnerDashboard() {
                     {editingQuantity === station.id ? (
                       <div className="flex gap-2 w-full">
                         <input
+                          id={`cngQuantity-${station.id}`}
+                          name={`cngQuantity-${station.id}`}
                           type="number"
                           value={tempQuantity}
                           onChange={(e) => setTempQuantity(e.target.value)}

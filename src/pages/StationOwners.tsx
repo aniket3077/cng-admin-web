@@ -127,6 +127,8 @@ export default function StationOwners() {
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
           <input
+            id="ownerSearch"
+            name="ownerSearch"
             type="text"
             placeholder="Search owners by name, email..."
             value={searchTerm}
@@ -138,6 +140,8 @@ export default function StationOwners() {
 
         <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
           <select
+            id="ownerStatusFilter"
+            name="ownerStatusFilter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter by Status"
@@ -151,6 +155,8 @@ export default function StationOwners() {
           </select>
 
           <select
+            id="ownerKycFilter"
+            name="ownerKycFilter"
             value={kycFilter}
             onChange={(e) => setKycFilter(e.target.value)}
             aria-label="Filter by KYC Status"
