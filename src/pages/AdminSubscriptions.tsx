@@ -337,6 +337,7 @@ export default function AdminSubscriptions() {
                       }}
                       className="bg-slate-800 border-none rounded-lg py-1.5 px-3 text-sm text-slate-300 focus:ring-1 focus:ring-primary-500 cursor-pointer"
                       defaultValue=""
+                      aria-label="Assign Subscription"
                     >
                       <option value="" disabled>Select Plan...</option>
                       <option value="basic">Basic (₹999)</option>

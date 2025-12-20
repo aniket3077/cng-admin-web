@@ -347,8 +347,9 @@ export default function Profile() {
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm text-slate-400">Full Name</label>
+                <label htmlFor="name" className="text-sm text-slate-400">Full Name</label>
                 <input
+                  id="name"
                   type="text"
                   name="name"
                   value={formData.name}
@@ -358,10 +359,11 @@ export default function Profile() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm text-slate-400">Company Name</label>
+                <label htmlFor="companyName" className="text-sm text-slate-400">Company Name</label>
                 <div className="relative">
                   <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
+                    id="companyName"
                     type="text"
                     name="companyName"
                     value={formData.companyName}
@@ -372,10 +374,11 @@ export default function Profile() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm text-slate-400">Phone</label>
+                <label htmlFor="phone" className="text-sm text-slate-400">Phone</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
+                    id="phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
@@ -395,8 +398,9 @@ export default function Profile() {
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm text-slate-400">Address</label>
+                <label htmlFor="address" className="text-sm text-slate-400">Address</label>
                 <input
+                  id="address"
                   type="text"
                   name="address"
                   value={formData.address}
@@ -407,8 +411,9 @@ export default function Profile() {
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm text-slate-400">City</label>
+                  <label htmlFor="city" className="text-sm text-slate-400">City</label>
                   <input
+                    id="city"
                     type="text"
                     name="city"
                     value={formData.city}
@@ -418,8 +423,9 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-slate-400">State</label>
+                  <label htmlFor="state" className="text-sm text-slate-400">State</label>
                   <input
+                    id="state"
                     type="text"
                     name="state"
                     value={formData.state}
@@ -432,10 +438,11 @@ export default function Profile() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm text-slate-400">Latitude</label>
+                  <label htmlFor="lat" className="text-sm text-slate-400">Latitude</label>
                   <div className="relative">
                     <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
+                      id="lat"
                       type="text"
                       name="lat"
                       value={formData.lat}
@@ -447,10 +454,11 @@ export default function Profile() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-slate-400">Longitude</label>
+                  <label htmlFor="lng" className="text-sm text-slate-400">Longitude</label>
                   <div className="relative">
                     <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
+                      id="lng"
                       type="text"
                       name="lng"
                       value={formData.lng}
@@ -584,6 +592,7 @@ export default function Profile() {
                             onChange={(e) => setTempQuantity(e.target.value)}
                             className="w-full bg-slate-900 border border-slate-700 text-white rounded-lg py-1.5 px-3 text-sm font-bold text-center outline-none focus:border-primary-500"
                             autoFocus
+                            aria-label="New CNG Quantity"
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500">kg</span>
                         </div>
@@ -591,12 +600,14 @@ export default function Profile() {
                           onClick={() => handleQuantityUpdate(station.id, parseFloat(tempQuantity) || 0)}
                           disabled={updatingCng === station.id}
                           className="bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-lg transition-colors"
+                          aria-label="Confirm Quantity Update"
                         >
                           {updatingCng === station.id ? <Loader className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => setEditingQuantity(null)}
                           className="bg-slate-700 hover:bg-slate-600 text-white p-2 rounded-lg transition-colors"
+                          aria-label="Cancel"
                         >
                           <X className="w-4 h-4" />
                         </button>

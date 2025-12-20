@@ -11,6 +11,7 @@ import OwnerDashboard from './pages/OwnerDashboard';
 import AddStation from './pages/AddStation';
 import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
+import LandingPage from './pages/LandingPage';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('adminToken');
@@ -27,7 +28,7 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 

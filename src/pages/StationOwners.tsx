@@ -140,6 +140,7 @@ export default function StationOwners() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter by Status"
             className="bg-slate-800 border-none rounded-lg py-2.5 pl-4 pr-10 text-slate-200 focus:ring-2 focus:ring-primary-500/50 cursor-pointer min-w-[140px]"
           >
             <option value="">All Status</option>
@@ -152,6 +153,7 @@ export default function StationOwners() {
           <select
             value={kycFilter}
             onChange={(e) => setKycFilter(e.target.value)}
+            aria-label="Filter by KYC Status"
             className="bg-slate-800 border-none rounded-lg py-2.5 pl-4 pr-10 text-slate-200 focus:ring-2 focus:ring-primary-500/50 cursor-pointer min-w-[140px]"
           >
             <option value="">All KYC</option>
@@ -278,7 +280,7 @@ export default function StationOwners() {
                 </div>
                 {selectedOwner.name}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white" aria-label="Close Modal">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>

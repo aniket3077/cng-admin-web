@@ -320,8 +320,9 @@ export default function AddStation() {
             </h3>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-300 ml-1">Opening Hours</label>
+              <label htmlFor="openingHours" className="text-sm font-medium text-slate-300 ml-1">Opening Hours</label>
               <select
+                id="openingHours"
                 name="openingHours"
                 value={formData.openingHours}
                 onChange={handleChange}
@@ -343,8 +344,8 @@ export default function AddStation() {
                     type="button"
                     onClick={() => handleAmenityToggle(id)}
                     className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all border ${formData.amenities.includes(id)
-                        ? 'bg-primary-500/10 text-primary-500 border-primary-500/50 shadow-lg shadow-primary-500/20'
-                        : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-slate-200'
+                      ? 'bg-primary-500/10 text-primary-500 border-primary-500/50 shadow-lg shadow-primary-500/20'
+                      : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:bg-slate-800 hover:text-slate-200'
                       }`}
                   >
                     <Icon className="w-4 h-4" />

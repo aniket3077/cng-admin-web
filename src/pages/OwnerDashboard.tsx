@@ -338,10 +338,10 @@ export default function OwnerDashboard() {
                     </div>
                   </div>
                   <span className={`px-3 py-1 text-xs font-medium rounded-full ${station.approvalStatus === 'approved'
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                      : station.approvalStatus === 'rejected'
-                        ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                    : station.approvalStatus === 'rejected'
+                      ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                     }`}>
                     {station.approvalStatus}
                   </span>
@@ -372,8 +372,8 @@ export default function OwnerDashboard() {
             <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
               {owner.stations.slice(0, 3).map((station) => (
                 <div key={station.id} className={`p-4 rounded-xl border transition-all ${cngQuantity[station.id] > 0
-                    ? 'bg-emerald-500/5 border-emerald-500/10'
-                    : 'bg-red-500/5 border-red-500/10'
+                  ? 'bg-emerald-500/5 border-emerald-500/10'
+                  : 'bg-red-500/5 border-red-500/10'
                   }`}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
@@ -392,17 +392,20 @@ export default function OwnerDashboard() {
                           onChange={(e) => setTempQuantity(e.target.value)}
                           className="flex-1 bg-slate-900 border border-slate-700 text-white rounded-lg px-3 py-1 text-sm text-center focus:border-emerald-500 outline-none"
                           autoFocus
+                          aria-label="CNG Quantity"
                         />
                         <button
                           onClick={() => handleQuantityUpdate(station.id, parseFloat(tempQuantity) || 0)}
                           disabled={updatingCng === station.id}
                           className="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-lg"
+                          aria-label="Update Quantity"
                         >
                           {updatingCng === station.id ? <Loader className="w-4 h-4 animate-spin" /> : <TrendingUp className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => setEditingQuantity(null)}
                           className="bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-lg"
+                          aria-label="Cancel"
                         >
                           <X className="w-4 h-4" />
                         </button>

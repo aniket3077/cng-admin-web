@@ -6,8 +6,7 @@ import {
   CreditCard,
   PlusCircle,
   User,
-  LogOut,
-  Fuel
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -43,9 +42,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       {/* Brand */}
       <div className="p-8">
         <Link to={isOwnerRoute ? "/owner/dashboard" : "/dashboard"} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-500 to-lime-400 flex items-center justify-center shadow-lg shadow-primary-500/30 group-hover:shadow-primary-500/50 transition-all duration-300">
-            <Fuel className="w-6 h-6 text-white" />
-          </div>
+          <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-xl object-contain shadow-md bg-white" />
           <div className="flex flex-col">
             <h1 className="text-xl font-bold text-slate-800 tracking-tight">CNG Bharat</h1>
             <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
