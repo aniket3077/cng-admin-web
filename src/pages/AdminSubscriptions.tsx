@@ -126,11 +126,11 @@ export default function AdminSubscriptions() {
 
   const getPlanBadge = (plan: string) => {
     const badges: Record<string, string> = {
-      basic: 'bg-slate-700 text-slate-300 border-slate-600',
-      standard: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-      premium: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+      basic: 'bg-slate-100 text-slate-600 border-slate-200',
+      standard: 'bg-blue-50 text-blue-600 border-blue-200',
+      premium: 'bg-purple-50 text-purple-600 border-purple-200',
     };
-    return `px-3 py-1 rounded-full text-xs font-medium border ${badges[plan] || 'bg-slate-700 text-slate-300 border-slate-600'} uppercase tracking-wider`;
+    return `px-3 py-1 rounded-full text-xs font-bold border ${badges[plan] || 'bg-slate-100 text-slate-600 border-slate-200'} uppercase tracking-wider`;
   };
 
   const formatDate = (dateString: string) => {
@@ -154,63 +154,63 @@ export default function AdminSubscriptions() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Subscription Management</h1>
-          <p className="text-slate-400 mt-1">Track revenue and manage plan statuses.</p>
+          <h1 className="text-3xl font-bold text-slate-800">Subscription Management</h1>
+          <p className="text-slate-500 mt-1">Track revenue and manage plan statuses.</p>
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-blue-500 text-blue-500">
             <CreditCard className="w-24 h-24" />
           </div>
           <div className="relative z-10">
-            <p className="text-slate-400 text-sm font-medium">Total Subscribers</p>
-            <h3 className="text-3xl font-bold text-white mt-1">{subscriptions.length}</h3>
+            <p className="text-slate-500 text-sm font-medium">Total Subscribers</p>
+            <h3 className="text-3xl font-bold text-slate-800 mt-1">{subscriptions.length}</h3>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-emerald-500 text-emerald-500">
             <CheckCircle className="w-24 h-24" />
           </div>
           <div className="relative z-10">
-            <p className="text-slate-400 text-sm font-medium">Active Subscriptions</p>
-            <h3 className="text-3xl font-bold text-emerald-400 mt-1">{activeCount}</h3>
+            <p className="text-slate-500 text-sm font-medium">Active Subscriptions</p>
+            <h3 className="text-3xl font-bold text-emerald-600 mt-1">{activeCount}</h3>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-red-500 text-red-500">
             <Clock className="w-24 h-24" />
           </div>
           <div className="relative z-10">
-            <p className="text-slate-400 text-sm font-medium">Expired</p>
-            <h3 className="text-3xl font-bold text-red-400 mt-1">{expiredCount}</h3>
+            <p className="text-slate-500 text-sm font-medium">Expired</p>
+            <h3 className="text-3xl font-bold text-red-600 mt-1">{expiredCount}</h3>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
+        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-purple-500 text-purple-500">
             <Filter className="w-24 h-24" />
           </div>
           <div className="relative z-10">
-            <p className="text-slate-400 text-sm font-medium">Monthly Revenue</p>
-            <h3 className="text-3xl font-bold text-purple-400 mt-1">₹{totalRevenue.toLocaleString()}</h3>
+            <p className="text-slate-500 text-sm font-medium">Monthly Revenue</p>
+            <h3 className="text-3xl font-bold text-purple-600 mt-1">₹{totalRevenue.toLocaleString()}</h3>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-4 rounded-xl flex gap-2">
+      <div className="glass-card p-4 rounded-xl flex gap-2 border border-white/60 bg-white/50 shadow-sm">
         {['all', 'active', 'expired'].map(status => (
           <button
             key={status}
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === status
               ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-              : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+              : 'text-slate-600 hover:bg-slate-100'
               } capitalize`}
           >
             {status}
@@ -219,12 +219,12 @@ export default function AdminSubscriptions() {
       </div>
 
       {/* Subscriptions Table */}
-      <div className="glass-card rounded-xl overflow-hidden border border-slate-800">
+      <div className="glass-card rounded-xl overflow-hidden border border-white/60 bg-white/50 shadow-sm">
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader className="w-10 h-10 text-primary-500 animate-spin mb-4" />
-              <p className="text-slate-400">Loading subscriptions...</p>
+              <p className="text-slate-500">Loading subscriptions...</p>
             </div>
           ) : filteredSubscriptions.length === 0 ? (
             <div className="text-center py-20 text-slate-500">
@@ -233,7 +233,7 @@ export default function AdminSubscriptions() {
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-700/50 bg-slate-900/50 text-xs uppercase text-slate-400 font-semibold tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50/50 text-xs uppercase text-slate-500 font-bold tracking-wider">
                   <th className="p-6">Owner</th>
                   <th className="p-6">Plan</th>
                   <th className="p-6">Amount</th>
@@ -242,12 +242,12 @@ export default function AdminSubscriptions() {
                   <th className="p-6">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-100">
                 {filteredSubscriptions.map((sub) => (
-                  <tr key={sub.id} className="group hover:bg-white/5 transition-colors">
+                  <tr key={sub.id} className="group hover:bg-slate-50/80 transition-colors">
                     <td className="p-6">
                       <div>
-                        <p className="font-medium text-slate-200">{sub.ownerName}</p>
+                        <p className="font-bold text-slate-800">{sub.ownerName}</p>
                         <p className="text-xs text-slate-500">{sub.ownerEmail}</p>
                       </div>
                     </td>
@@ -255,18 +255,18 @@ export default function AdminSubscriptions() {
                       <span className={getPlanBadge(sub.planType)}>{sub.planType}</span>
                     </td>
                     <td className="p-6">
-                      <p className="font-medium text-slate-300">₹{sub.amount.toLocaleString()}</p>
+                      <p className="font-medium text-slate-700">₹{sub.amount.toLocaleString()}</p>
                       <p className="text-xs text-slate-500">/month</p>
                     </td>
                     <td className="p-6">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border ${sub.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        : 'bg-red-500/10 text-red-400 border-red-500/20'
+                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                        : 'bg-red-50 text-red-600 border-red-200'
                         }`}>
                         {sub.status === 'active' ? 'Active' : 'Expired'}
                       </span>
                     </td>
-                    <td className="p-6 text-slate-400 text-sm">
+                    <td className="p-6 text-slate-500 text-sm">
                       {sub.expiresAt ? formatDate(sub.expiresAt) : 'N/A'}
                     </td>
                     <td className="p-6">
@@ -274,7 +274,7 @@ export default function AdminSubscriptions() {
                         {sub.status === 'expired' && (
                           <button
                             onClick={() => handleActivateSubscription(sub.ownerId, sub.planType)}
-                            className="p-2 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                             title="Renew"
                           >
                             <RotateCcw className="w-4 h-4" />
@@ -283,7 +283,7 @@ export default function AdminSubscriptions() {
                         {sub.status === 'active' && (
                           <button
                             onClick={() => handleDeactivateSubscription(sub.ownerId)}
-                            className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Deactivate"
                           >
                             <Ban className="w-4 h-4" />
@@ -301,30 +301,30 @@ export default function AdminSubscriptions() {
 
       {/* Owners Without Subscription */}
       <div className="mt-12">
-        <h2 className="text-xl font-bold text-white mb-6">Owners Without Subscription</h2>
-        <div className="glass-card rounded-xl overflow-hidden border border-slate-800">
+        <h2 className="text-xl font-bold text-slate-800 mb-6">Owners Without Subscription</h2>
+        <div className="glass-card rounded-xl overflow-hidden border border-white/60 bg-white/50 shadow-sm">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-700/50 bg-slate-900/50 text-xs uppercase text-slate-400 font-semibold tracking-wider">
+              <tr className="border-b border-slate-200 bg-slate-50/50 text-xs uppercase text-slate-500 font-bold tracking-wider">
                 <th className="p-6">Owner</th>
                 <th className="p-6">Stations</th>
                 <th className="p-6">Joined</th>
                 <th className="p-6">Assign Plan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-100">
               {owners.filter(o => !o.subscriptionType).slice(0, 10).map((owner) => (
-                <tr key={owner.id} className="hover:bg-white/5 transition-colors">
+                <tr key={owner.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="p-6">
                     <div>
-                      <p className="font-medium text-slate-200">{owner.name}</p>
+                      <p className="font-bold text-slate-800">{owner.name}</p>
                       <p className="text-xs text-slate-500">{owner.email}</p>
                     </div>
                   </td>
-                  <td className="p-6 text-slate-300">
+                  <td className="p-6 text-slate-600">
                     {owner._count?.stations || 0}
                   </td>
-                  <td className="p-6 text-slate-400">
+                  <td className="p-6 text-slate-500">
                     {formatDate(owner.createdAt)}
                   </td>
                   <td className="p-6">
@@ -337,7 +337,7 @@ export default function AdminSubscriptions() {
                           e.target.value = '';
                         }
                       }}
-                      className="bg-slate-800 border-none rounded-lg py-1.5 px-3 text-sm text-slate-300 focus:ring-1 focus:ring-primary-500 cursor-pointer"
+                      className="bg-white border border-slate-200 rounded-lg py-1.5 px-3 text-sm text-slate-700 focus:ring-1 focus:ring-primary-500 cursor-pointer outline-none"
                       defaultValue=""
                       aria-label="Assign Subscription"
                     >

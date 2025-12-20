@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Phone, CheckCircle, XCircle, AlertTriangle, Eye, Loader } from 'lucide-react';
+import { Search, MapPin, Phone, CheckCircle, XCircle, AlertTriangle, Eye, Loader, Trash2 } from 'lucide-react';
+
 
 interface Station {
   id: string;
@@ -290,6 +291,14 @@ export default function Stations() {
                             </button>
                           </div>
                         )}
+                        <button
+                          onClick={() => handleDelete(station.id)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-1"
+                          title="Delete Station"
+                          aria-label="Delete Station"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -371,6 +380,12 @@ export default function Stations() {
 
             <div className="p-6 border-t border-slate-100 flex gap-3 justify-end bg-slate-50/80">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-700 transition-colors">Close</button>
+              <button
+                onClick={() => handleDelete(selectedStation.id)}
+                className="px-4 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors mr-auto"
+              >
+                Delete Station
+              </button>
               {selectedStation.approvalStatus === 'pending' && (
                 <>
                   <button onClick={() => handleReject(selectedStation.id)} className="px-4 py-2 bg-red-500/10 text-red-600 hover:bg-red-500/20 rounded-lg transition-colors">Reject</button>

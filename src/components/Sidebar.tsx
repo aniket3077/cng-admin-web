@@ -15,7 +15,7 @@ interface SidebarProps {
 
 export default function Sidebar({ onLogout }: SidebarProps) {
   const location = useLocation();
-  const isOwnerRoute = location.pathname.startsWith('/owner');
+  const isOwnerRoute = location.pathname.startsWith('/owner/');
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');

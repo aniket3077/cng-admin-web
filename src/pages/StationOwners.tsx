@@ -117,15 +117,15 @@ export default function StationOwners() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Station Owners</h1>
-          <p className="text-slate-400 mt-1">Manage registered station owners and businesses.</p>
+          <h1 className="text-3xl font-bold text-slate-800">Station Owners</h1>
+          <p className="text-slate-500 mt-1">Manage registered station owners and businesses.</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center">
+      <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center border border-white/60 shadow-sm bg-white/50">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             id="ownerSearch"
             name="ownerSearch"
@@ -134,7 +134,7 @@ export default function StationOwners() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            className="w-full bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2.5 text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-primary-500/50"
+            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
           />
         </div>
 
@@ -145,7 +145,7 @@ export default function StationOwners() {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             aria-label="Filter by Status"
-            className="bg-slate-800 border-none rounded-lg py-2.5 pl-4 pr-10 text-slate-200 focus:ring-2 focus:ring-primary-500/50 cursor-pointer min-w-[140px]"
+            className="bg-white border border-slate-200 rounded-lg py-2.5 pl-4 pr-10 text-slate-800 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none cursor-pointer min-w-[140px]"
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
@@ -160,7 +160,7 @@ export default function StationOwners() {
             value={kycFilter}
             onChange={(e) => setKycFilter(e.target.value)}
             aria-label="Filter by KYC Status"
-            className="bg-slate-800 border-none rounded-lg py-2.5 pl-4 pr-10 text-slate-200 focus:ring-2 focus:ring-primary-500/50 cursor-pointer min-w-[140px]"
+            className="bg-white border border-slate-200 rounded-lg py-2.5 pl-4 pr-10 text-slate-800 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none cursor-pointer min-w-[140px]"
           >
             <option value="">All KYC</option>
             <option value="verified">Verified</option>
@@ -171,7 +171,7 @@ export default function StationOwners() {
 
           <button
             onClick={handleSearch}
-            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors shadow-lg shadow-primary-500/20 whitespace-nowrap"
+            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-primary-500/20 whitespace-nowrap"
           >
             Apply Filters
           </button>
@@ -179,12 +179,12 @@ export default function StationOwners() {
       </div>
 
       {/* Table */}
-      <div className="glass-card rounded-xl overflow-hidden border border-slate-800">
+      <div className="glass-card rounded-xl overflow-hidden border border-white/60 shadow-sm bg-white/50">
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader className="w-10 h-10 text-primary-500 animate-spin mb-4" />
-              <p className="text-slate-400">Loading owners...</p>
+              <p className="text-slate-500">Loading owners...</p>
             </div>
           ) : owners.length === 0 ? (
             <div className="text-center py-20 text-slate-500">
@@ -193,7 +193,7 @@ export default function StationOwners() {
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-700/50 bg-slate-900/50 text-xs uppercase text-slate-400 font-semibold tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50/50 text-xs uppercase text-slate-500 font-bold tracking-wider">
                   <th className="p-6">Owner Profile</th>
                   <th className="p-6">Contact Info</th>
                   <th className="p-6">Status & KYC</th>
@@ -201,23 +201,23 @@ export default function StationOwners() {
                   <th className="p-6 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-100">
                 {owners.map((owner) => (
-                  <tr key={owner.id} className="group hover:bg-white/5 transition-colors">
+                  <tr key={owner.id} className="group hover:bg-slate-50/80 transition-colors">
                     <td className="p-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-slate-300 font-bold border border-slate-600">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
                           {owner.name?.charAt(0) || 'U'}
                         </div>
                         <div>
-                          <p className="font-medium text-slate-200">{owner.name}</p>
+                          <p className="font-bold text-slate-800">{owner.name}</p>
                           <p className="text-xs text-slate-500">{owner.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="p-6">
-                      <p className="text-slate-300 text-sm">{owner.phone}</p>
-                      <p className="text-slate-500 text-xs">{owner.address || 'No address'}</p>
+                      <p className="text-slate-600 text-sm">{owner.phone}</p>
+                      <p className="text-slate-400 text-xs">{owner.address || 'No address'}</p>
                     </td>
                     <td className="p-6">
                       <div className="flex flex-col gap-2 items-start">
@@ -229,14 +229,14 @@ export default function StationOwners() {
                         </span>
                       </div>
                     </td>
-                    <td className="p-6 text-slate-400 text-sm">
+                    <td className="p-6 text-slate-500 text-sm">
                       {new Date(owner.createdAt).toLocaleDateString()}
                     </td>
                     <td className="p-6 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => { setSelectedOwner(owner); setShowModal(true); }}
-                          className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -253,20 +253,20 @@ export default function StationOwners() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
+          <div className="p-4 border-t border-slate-200 flex justify-between items-center bg-slate-50/50">
             <span className="text-sm text-slate-500">Page {currentPage} of {totalPages}</span>
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-slate-300 transition-colors"
+                className="px-4 py-2 text-sm bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-slate-600 font-medium transition-colors"
               >
                 Previous
               </button>
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-slate-300 transition-colors"
+                className="px-4 py-2 text-sm bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-slate-600 font-medium transition-colors"
               >
                 Next
               </button>
@@ -277,23 +277,23 @@ export default function StationOwners() {
 
       {/* Owner Details Modal */}
       {showModal && selectedOwner && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl animate-fade-in border border-slate-700">
-            <div className="p-6 border-b border-slate-700/50 flex justify-between items-center sticky top-0 bg-slate-900/90 backdrop-blur z-10">
-              <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-500/20 text-primary-500 flex items-center justify-center text-sm font-bold">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl animate-fade-in border border-white/60 bg-white shadow-2xl">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-10">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center text-sm font-bold border border-primary-100">
                   {selectedOwner.name?.charAt(0)}
                 </div>
                 {selectedOwner.name}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white" aria-label="Close Modal">
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors" aria-label="Close Modal">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
 
             <div className="p-6 space-y-8">
               {/* Account Status Section */}
-              <div className="flex gap-6 p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
+              <div className="flex gap-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="space-y-1">
                   <label className="text-xs text-slate-500 uppercase font-bold tracking-wider">Account Status</label>
                   <div><span className={getStatusBadge(selectedOwner.status)}>{selectedOwner.status}</span></div>
@@ -306,37 +306,37 @@ export default function StationOwners() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-white border-b border-slate-700 pb-2">Business Information</h3>
+                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Business Information</h3>
                   <div className="space-y-3">
                     <div>
                       <label className="text-xs text-slate-500 block mb-1">Company Name</label>
-                      <p className="text-slate-200">{selectedOwner.companyName || 'N/A'}</p>
+                      <p className="text-slate-800 font-medium">{selectedOwner.companyName || 'N/A'}</p>
                     </div>
                     <div>
                       <label className="text-xs text-slate-500 block mb-1">Business Type</label>
-                      <p className="text-slate-200">{selectedOwner.businessType || 'N/A'}</p>
+                      <p className="text-slate-800 font-medium">{selectedOwner.businessType || 'N/A'}</p>
                     </div>
                     <div>
                       <label className="text-xs text-slate-500 block mb-1">Tax ID / GST</label>
-                      <p className="text-slate-200">{selectedOwner.taxId || 'N/A'}</p>
+                      <p className="text-slate-800 font-medium">{selectedOwner.taxId || 'N/A'}</p>
                     </div>
                     <div>
                       <label className="text-xs text-slate-500 block mb-1">Address</label>
-                      <p className="text-slate-200">{selectedOwner.address || 'N/A'}</p>
+                      <p className="text-slate-800 font-medium">{selectedOwner.address || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-white border-b border-slate-700 pb-2">Contact Details</h3>
+                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">Contact Details</h3>
                   <div className="space-y-3">
                     <div>
                       <label className="text-xs text-slate-500 block mb-1">Email</label>
-                      <p className="text-slate-200">{selectedOwner.email}</p>
+                      <p className="text-slate-800 font-medium">{selectedOwner.email}</p>
                     </div>
                     <div>
                       <label className="text-xs text-slate-500 block mb-1">Phone</label>
-                      <p className="text-slate-200">{selectedOwner.phone}</p>
+                      <p className="text-slate-800 font-medium">{selectedOwner.phone}</p>
                     </div>
                   </div>
                 </div>
@@ -344,16 +344,16 @@ export default function StationOwners() {
 
               {/* Documents Section */}
               <div>
-                <h3 className="text-sm font-bold text-white border-b border-slate-700 pb-2 mb-4">KYC Documents</h3>
+                <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">KYC Documents</h3>
                 {selectedOwner.kycDocuments && selectedOwner.kycDocuments.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {selectedOwner.kycDocuments.map((doc: any, index: number) => (
-                      <div key={index} className="p-3 bg-slate-800 rounded-lg flex items-center justify-between border border-slate-700">
+                      <div key={index} className="p-3 bg-slate-50 rounded-lg flex items-center justify-between border border-slate-200">
                         <div className="flex items-center gap-3">
                           <Shield className="w-4 h-4 text-primary-500" />
-                          <span className="text-sm text-slate-300 capitalize">{doc.type.replace('_', ' ')}</span>
+                          <span className="text-sm text-slate-600 capitalize">{doc.type.replace('_', ' ')}</span>
                         </div>
-                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-400 hover:text-primary-300 font-medium hover:underline">View</a>
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-600 hover:text-primary-700 font-bold hover:underline">View</a>
                       </div>
                     ))}
                   </div>
@@ -363,31 +363,31 @@ export default function StationOwners() {
               </div>
 
               {/* Actions Panel */}
-              <div className="pt-6 border-t border-slate-700 space-y-4">
-                <h3 className="text-sm font-bold text-white mb-2">Administrative Actions</h3>
+              <div className="pt-6 border-t border-slate-100 space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 mb-2">Administrative Actions</h3>
                 <div className="flex flex-wrap gap-3">
                   {selectedOwner.status === 'pending' || selectedOwner.status === 'suspended' ? (
-                    <button onClick={() => handleApprove(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg transition-colors border border-emerald-500/20">
+                    <button onClick={() => handleApprove(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200 font-medium">
                       <CheckCircle className="w-4 h-4" /> Activate Owner
                     </button>
                   ) : (
-                    <button onClick={() => handleSuspend(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 rounded-lg transition-colors border border-orange-500/20">
+                    <button onClick={() => handleSuspend(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors border border-orange-200 font-medium">
                       <Ban className="w-4 h-4" /> Suspend Owner
                     </button>
                   )}
 
                   {selectedOwner.kycStatus === 'pending' && (
                     <>
-                      <button onClick={() => handleVerifyKYC(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-colors border border-blue-500/20">
+                      <button onClick={() => handleVerifyKYC(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200 font-medium">
                         <Shield className="w-4 h-4" /> Verify KYC
                       </button>
-                      <button onClick={() => handleRejectKYC(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20">
+                      <button onClick={() => handleRejectKYC(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors border border-red-200 font-medium">
                         <XCircle className="w-4 h-4" /> Reject KYC
                       </button>
                     </>
                   )}
 
-                  <button onClick={() => handleDelete(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/20 ml-auto">
+                  <button onClick={() => handleDelete(selectedOwner.id)} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors border border-red-200 ml-auto font-medium">
                     <Trash2 className="w-4 h-4" /> Delete Account
                   </button>
                 </div>
