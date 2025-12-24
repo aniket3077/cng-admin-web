@@ -18,6 +18,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
+import ManageAdmins from './pages/ManageAdmins';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('adminToken');
@@ -102,6 +103,14 @@ function App() {
                 <Layout>
                   <AdminSubscriptions />
                 </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admins"
+            element={
+              <PrivateRoute>
+                <ManageAdmins />
               </PrivateRoute>
             }
           />

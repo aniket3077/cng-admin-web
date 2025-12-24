@@ -278,6 +278,27 @@ export const adminApi = {
     );
     return response.data;
   },
+
+  // Admin User Management (Superadmin)
+  getAdmins: async () => {
+    const response = await api.get('/admin/admins');
+    return response.data.admins;
+  },
+
+  createAdmin: async (data: { name: string; email: string; password: string; role?: string }) => {
+    const response = await api.post('/admin/admins', data);
+    return response.data;
+  },
+
+  updateAdmin: async (id: string, role: string) => {
+    const response = await api.put(`/admin/admins?id=${id}`, { role });
+    return response.data;
+  },
+
+  deleteAdmin: async (id: string) => {
+    const response = await api.delete(`/admin/admins?id=${id}`);
+    return response.data;
+  },
 };
 
 export default api;

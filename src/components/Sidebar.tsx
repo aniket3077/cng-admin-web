@@ -6,7 +6,8 @@ import {
   CreditCard,
   PlusCircle,
   User,
-  LogOut
+  LogOut,
+  Shield
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -76,6 +77,28 @@ export default function Sidebar({ onLogout }: SidebarProps) {
           </>
         )}
       </nav>
+      {/* Superadmin Link */}
+      {(() => {
+        try {
+          const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+          if (adminUser?.role === 'superadmin' && !isOwnerRoute) {
+            return (
+              <div className="px-4 mt-2">
+                <div className="px-4 mb-2">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Administration
+                  </span>
+                </div>
+                <nav className="space-y-2">
+                  <NavItem to="/admins" icon={Shield} label="Manage Admins" />
+                </nav>
+              </div>
+            );
+          }
+        } catch (e) { }
+        return null;
+      })()
+      }
 
       {/* Footer / Logout */}
       <div className="p-4 border-t border-slate-100">
