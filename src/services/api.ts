@@ -251,6 +251,19 @@ export const adminApi = {
     return response.data;
   },
 
+  // User Management
+  getUsers: async (page = 1, limit = 20, search = '') => {
+    const params: any = { page, limit };
+    if (search) params.search = search;
+    const response = await api.get('/admin/users', { params });
+    return response.data;
+  },
+
+  deleteUser: async (id: string) => {
+    const response = await api.delete(`/admin/users?id=${id}`);
+    return response.data;
+  },
+
   // Support Ticket Management
   getTickets: async (page = 1, filters?: { status?: string; category?: string; priority?: string }) => {
     const params: any = { page, ...filters };
@@ -276,27 +289,6 @@ export const adminApi = {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`
     );
-    return response.data;
-  },
-
-  // Admin User Management (Superadmin)
-  getAdmins: async () => {
-    const response = await api.get('/admin/admins');
-    return response.data.admins;
-  },
-
-  createAdmin: async (data: { name: string; email: string; password: string; role?: string }) => {
-    const response = await api.post('/admin/admins', data);
-    return response.data;
-  },
-
-  updateAdmin: async (id: string, role: string) => {
-    const response = await api.put(`/admin/admins?id=${id}`, { role });
-    return response.data;
-  },
-
-  deleteAdmin: async (id: string) => {
-    const response = await api.delete(`/admin/admins?id=${id}`);
     return response.data;
   },
 };

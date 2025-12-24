@@ -11,6 +11,7 @@ import OwnerDashboard from './pages/OwnerDashboard';
 import AddStation from './pages/AddStation';
 import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
+import Users from './pages/Users';
 import LandingPage from './pages/LandingPage';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
@@ -18,7 +19,6 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
-import ManageAdmins from './pages/ManageAdmins';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('adminToken');
@@ -107,10 +107,12 @@ function App() {
             }
           />
           <Route
-            path="/admins"
+            path="/users"
             element={
               <PrivateRoute>
-                <ManageAdmins />
+                <Layout>
+                  <Users />
+                </Layout>
               </PrivateRoute>
             }
           />

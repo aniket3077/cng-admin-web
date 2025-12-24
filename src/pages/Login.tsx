@@ -34,7 +34,6 @@ export default function Login() {
       // Store token based on user type
       if (isAdmin) {
         localStorage.setItem('adminToken', data.token);
-        localStorage.setItem('adminUser', JSON.stringify(data.admin));
         localStorage.removeItem('ownerToken');
         localStorage.removeItem('ownerUser');
         navigate('/dashboard');
