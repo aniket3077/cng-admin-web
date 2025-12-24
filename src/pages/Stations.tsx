@@ -61,12 +61,25 @@ export default function Stations() {
 
   const handleApprove = async (stationId: string) => {
     try {
-      await adminApi.updateStation(stationId, { approvalStatus: 'approved' });
+      await adminApi.updateStation(stationId, { approvalStatus: 'approved', isVerified: true });
       fetchStations();
       setShowModal(false);
     } catch (error) {
       console.error(error);
       alert('Failed to approve');
+    }
+  };
+
+  const handleVerify = async (stationId: string, isVerified: boolean) => {
+    try {
+      await adminApi.updateStation(stationId, { isVerified });
+      fetchStations();
+      if (selectedStation?.id === stationId) {
+        setSelectedStation({ ...selectedStation, isVerified });
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Failed to update verification status');
     }
   };
 
@@ -391,6 +404,16 @@ export default function Stations() {
 
             <div className="p-6 border-t border-slate-100 flex gap-3 justify-end bg-slate-50/80">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-700 transition-colors">Close</button>
+
+              <button
+                onClick={() => handleVerify(selectedStation.id, !selectedStation.isVerified)}
+                className={`px-4 py-2 border rounded-lg transition-colors ${selectedStation.isVerified
+                  ? 'border-amber-200 text-amber-600 hover:bg-amber-50'
+                  : 'border-blue-200 text-blue-600 hover:bg-blue-50'}`}
+              >
+                {selectedStation.isVerified ? 'Remove Blue Tick' : 'Grant Blue Tick'}
+              </button>
+
               <button
                 onClick={() => handleDelete(selectedStation.id)}
                 className="px-4 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors mr-auto"
