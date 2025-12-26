@@ -22,6 +22,20 @@ interface Plan {
 
 const plans: Plan[] = [
   {
+    id: 'trial',
+    name: '7-Day Trial',
+    price: 1,
+    duration: '7 days',
+    features: [
+      'Full Platform Access',
+      'List Unlimited Stations',
+      'Real-time Updates',
+      'Analytics Dashboard',
+      'Priority Support',
+    ],
+    popular: false,
+  },
+  {
     id: 'basic',
     name: 'Basic',
     price: 999,

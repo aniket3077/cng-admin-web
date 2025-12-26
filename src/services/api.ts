@@ -264,6 +264,11 @@ export const adminApi = {
     return response.data;
   },
 
+  updateUser: async (id: string, data: { subscriptionType?: string; subscriptionEndsAt?: string }) => {
+    const response = await api.put(`/admin/users?id=${id}`, data);
+    return response.data;
+  },
+
   // Support Ticket Management
   getTickets: async (page = 1, filters?: { status?: string; category?: string; priority?: string }) => {
     const params: any = { page, ...filters };

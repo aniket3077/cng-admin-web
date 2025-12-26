@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Loader, Trash2, User } from 'lucide-react';
+import { Search, Loader, Trash2, User, CreditCard, XCircle } from 'lucide-react';
 import { adminApi } from '../services/api';
 
 export default function Users() {
@@ -8,6 +8,11 @@ export default function Users() {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Subscription Modal State
+    const [showPlanModal, setShowPlanModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
+    const [selectedPlan, setSelectedPlan] = useState('');
 
     useEffect(() => {
         fetchUsers();
@@ -38,6 +43,41 @@ export default function Users() {
             fetchUsers();
         } catch (error) {
             console.error('Failed to delete user:', error);
+        }
+    };
+
+    const handleAssignPlan = async () => {
+        if (!selectedUser || !selectedPlan) return;
+        try {
+            // Calculate end date based on plan (example: 30 days)
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + 30);
+
+            await adminApi.updateUser(selectedUser.id, {
+                subscriptionType: selectedPlan,
+                subscriptionEndsAt: endDate.toISOString()
+            });
+
+            fetchUsers();
+            setShowPlanModal(false);
+            setSelectedUser(null);
+            setSelectedPlan('');
+        } catch (error) {
+            console.error('Failed to assign plan:', error);
+            alert('Failed to update subscription');
+        }
+    };
+
+    const handleRemovePlan = async (user: any) => {
+        if (!confirm('Remove subscription for this user?')) return;
+        try {
+            await adminApi.updateUser(user.id, {
+                subscriptionType: '',
+                subscriptionEndsAt: '' // API will handle empty or logic to nullify
+            });
+            fetchUsers();
+        } catch (error) {
+            console.error('Failed to remove plan:', error);
         }
     };
 
@@ -92,6 +132,7 @@ export default function Users() {
                                     <th className="p-6">User Info</th>
                                     <th className="p-6">Contact</th>
                                     <th className="p-6">Role</th>
+                                    <th className="p-6">Subscription</th>
                                     <th className="p-6">Joined Date</th>
                                     <th className="p-6 text-center">Actions</th>
                                 </tr>
@@ -119,17 +160,42 @@ export default function Users() {
                                                 {user.role}
                                             </span>
                                         </td>
+                                        <td className="p-6">
+                                            {user.subscriptionType ? (
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <span className="px-3 py-1 rounded-full text-xs font-bold border bg-purple-50 text-purple-600 border-purple-200 uppercase tracking-wider">
+                                                        {user.subscriptionType}
+                                                    </span>
+                                                    {user.subscriptionEndsAt && (
+                                                        <span className="text-[10px] text-slate-400">
+                                                            Exp: {new Date(user.subscriptionEndsAt).toLocaleDateString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-400 text-sm italic">Free / None</span>
+                                            )}
+                                        </td>
                                         <td className="p-6 text-slate-500 text-sm">
                                             {new Date(user.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="p-6 text-center">
-                                            <button
-                                                onClick={() => handleDelete(user.id)}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Delete User"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button
+                                                    onClick={() => { setSelectedUser(user); setShowPlanModal(true); }}
+                                                    className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                                    title="Manage Subscription"
+                                                >
+                                                    <CreditCard className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(user.id)}
+                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete User"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -161,6 +227,56 @@ export default function Users() {
                     </div>
                 )}
             </div>
+
+            {/* Plan Assignment Modal */}
+            {showPlanModal && selectedUser && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="glass-card w-full max-w-md rounded-2xl animate-fade-in border border-white/60 bg-white shadow-2xl p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-slate-800">Manage Subscription</h3>
+                            <button onClick={() => setShowPlanModal(false)} className="text-slate-400 hover:text-slate-600">
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <p className="text-slate-600 text-sm">
+                                Assign a subscription plan to <span className="font-bold text-slate-800">{selectedUser.name}</span>.
+                            </p>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Select Plan</label>
+                                <select
+                                    value={selectedPlan}
+                                    onChange={(e) => setSelectedPlan(e.target.value)}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-primary-500/20"
+                                >
+                                    <option value="">Select a plan...</option>
+                                    <option value="basic">Basic Plan (30 Days)</option>
+                                    <option value="premium">Premium Plan (30 Days)</option>
+                                    <option value="pro">Pro Plan (30 Days)</option>
+                                </select>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    onClick={() => handleRemovePlan(selectedUser)}
+                                    className="flex-1 px-4 py-2 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 font-medium transition-colors"
+                                >
+                                    Remove Plan
+                                </button>
+                                <button
+                                    onClick={handleAssignPlan}
+                                    disabled={!selectedPlan}
+                                    className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-500/20"
+                                >
+                                    Assign Plan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
