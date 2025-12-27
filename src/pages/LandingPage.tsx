@@ -28,7 +28,7 @@ export default function LandingPage() {
             {/* Navigation */}
             <nav className="relative z-50 px-6 py-6 max-w-7xl mx-auto flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <img src="/logo.png" alt="CNG Bharat" className="w-10 h-10 rounded-xl shadow-lg shadow-primary-500/20 object-contain bg-white" />
+                    <img src="https://drive.google.com/uc?export=view&id=1VPV02OPjG48zyv_-D6s3Lsx0aF0khI9y" alt="CNG Bharat" className="w-10 h-10 rounded-xl shadow-lg shadow-primary-500/20 object-contain bg-white" />
                     <span className="text-xl font-bold tracking-tight text-slate-900">CNG Bharat</span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -586,7 +586,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 mb-8">
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <img src="/logo.png" alt="CNG Bharat" className="w-8 h-8 rounded-lg object-contain bg-white" />
+                            <img src="https://drive.google.com/uc?export=view&id=1VPV02OPjG48zyv_-D6s3Lsx0aF0khI9y" alt="CNG Bharat" className="w-8 h-8 rounded-lg object-contain bg-white" />
                             <span className="text-lg font-bold text-slate-900">CNG Bharat</span>
                         </div>
                         <p className="text-slate-500 text-sm leading-relaxed">
