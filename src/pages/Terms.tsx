@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, FileText, Mail, User, Building2, Globe, Smartphone, UserCheck, AlertTriangle, CheckCircle, Info, Scale, Link2, Shield, Lock, Bell, Gavel, CreditCard, RefreshCcw, IndianRupee, XCircle } from 'lucide-react';
+import { ChevronLeft, FileText, Mail, User, Building2, Globe, Smartphone, UserCheck, AlertTriangle, CheckCircle, Info, Scale, Link2, Shield, Lock, Bell, Gavel, CreditCard, RefreshCcw, IndianRupee } from 'lucide-react';
 
 export default function Terms() {
     const navigate = useNavigate();

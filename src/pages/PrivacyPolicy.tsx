@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Shield, Mail, User, MapPin, Globe, Lock, FileText, Link2, Bell, Smartphone, Database, Users, Baby, Settings, Building2, CreditCard, Clock, Trash2, Download } from 'lucide-react';
+import { ChevronLeft, Shield, Mail, User, MapPin, Globe, Lock, FileText, Link2, Bell, Smartphone, Database, Users, Baby, Settings, Building2, CreditCard, Clock, Trash2 } from 'lucide-react';
 
 export default function PrivacyPolicy() {
     const navigate = useNavigate();
