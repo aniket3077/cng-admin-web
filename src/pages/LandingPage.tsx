@@ -28,7 +28,7 @@ export default function LandingPage() {
             {/* Navigation */}
             <nav className="relative z-50 px-6 py-6 max-w-7xl mx-auto flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <img src="https://drive.google.com/uc?export=view&id=1VPV02OPjG48zyv_-D6s3Lsx0aF0khI9y" alt="CNG Bharat" className="w-10 h-10 rounded-xl shadow-lg shadow-primary-500/20 object-contain bg-white" />
+                    <img src={`${import.meta.env.BASE_URL}logo.png`} alt="CNG Bharat" className="w-10 h-10 rounded-xl shadow-lg shadow-primary-500/20 object-contain bg-white" />
                     <span className="text-xl font-bold tracking-tight text-slate-900">CNG Bharat</span>
                 </div>
                 <div className="flex items-center gap-4">
