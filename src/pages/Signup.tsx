@@ -19,6 +19,7 @@ export default function Signup() {
     lat: null as number | null,
     lng: null as number | null,
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,6 +77,12 @@ export default function Signup() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Terms acceptance validation
+    if (!acceptedTerms) {
+      setError('Please accept the Terms and Conditions and Privacy Policy to continue');
+      return;
+    }
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
@@ -339,6 +346,38 @@ export default function Signup() {
                       placeholder="Confirm Password"
                     />
                   </div>
+                </div>
+
+                {/* Terms and Conditions Checkbox */}
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex-shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-5 h-5 border-2 border-slate-300 rounded-md peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-all duration-200 flex items-center justify-center">
+                        {acceptedTerms && (
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-sm text-slate-600 leading-relaxed">
+                      I agree to the{' '}
+                      <Link to="/terms" target="_blank" className="text-primary-600 hover:text-primary-700 font-semibold underline underline-offset-2">
+                        Terms and Conditions
+                      </Link>{' '}
+                      and{' '}
+                      <Link to="/privacy" target="_blank" className="text-primary-600 hover:text-primary-700 font-semibold underline underline-offset-2">
+                        Privacy Policy
+                      </Link>
+                      . I understand that my data will be processed as described in the Privacy Policy.
+                    </span>
+                  </label>
                 </div>
 
                 <button
