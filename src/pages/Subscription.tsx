@@ -128,7 +128,7 @@ export default function Subscription() {
       // Initialize Razorpay
       const plan = plans.find(p => p.id === planId);
       const options = {
-        key: 'rzp_test_RtZjpW0SUdQOs0', // Your Razorpay test key
+        key: data.keyId || 'rzp_test_S1MVXM8pyRYzzL', // Use key from backend or fallback
         amount: data.amount,
         currency: 'INR',
         name: 'CNG Bharat',

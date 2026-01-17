@@ -12,6 +12,7 @@ export default function Terms() {
                     <button
                         onClick={() => navigate('/')}
                         className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                        aria-label="Go back to home"
                     >
                         <ChevronLeft className="w-5 h-5 text-slate-600" />
                     </button>
