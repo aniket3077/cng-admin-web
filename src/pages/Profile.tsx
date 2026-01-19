@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Building, MapPin, Navigation, Edit2, Save, X, CheckCircle, BatteryCharging, TrendingUp, AlertCircle, Info, Loader } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://cng-backend.vercel.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.cngbharat.com/api';
 
 export default function Profile() {
   const navigate = useNavigate();
