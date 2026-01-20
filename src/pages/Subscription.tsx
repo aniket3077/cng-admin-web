@@ -110,7 +110,7 @@ export default function Subscription() {
       }
 
       // Create order
-      const response = await fetch(`${API_URL}/owner/subscription/create-order`, {
+      const response = await fetch(`${API_URL}/owner/subscription/initiate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ export default function Subscription() {
         handler: async function (response: any) {
           // Verify payment
           try {
-            const verifyResponse = await fetch(`${API_URL}/owner/subscription/verify-payment`, {
+            const verifyResponse = await fetch(`${API_URL}/owner/subscription/complete`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
