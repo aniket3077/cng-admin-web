@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Loader, Zap, Star, Shield, HelpCircle, Phone } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.cngbharat.com/api';
-
 // Declare Razorpay type
 declare global {
   interface Window {
