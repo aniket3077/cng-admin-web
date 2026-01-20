@@ -108,7 +108,7 @@ export default function Subscription() {
       }
 
       // Create order
-      const response = await fetch('https://api.cngbharat.com/api/owner/subscription/initiate', {
+      const response = await fetch('/api/owner/subscription/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ export default function Subscription() {
         handler: async function (response: any) {
           // Verify payment
           try {
-            const verifyResponse = await fetch('https://api.cngbharat.com/api/owner/subscription/complete', {
+            const verifyResponse = await fetch('/api/owner/subscription/complete', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

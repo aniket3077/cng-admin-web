@@ -41,7 +41,7 @@ export default function OwnerDashboard() {
   const [updatingCng, setUpdatingCng] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const API_URL = 'https://api.cngbharat.com/api';
+  const API_URL = '/api';
 
   const fetchSubscription = async () => {
     try {
