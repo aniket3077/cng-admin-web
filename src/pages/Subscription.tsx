@@ -102,6 +102,10 @@ export default function Subscription() {
     setLoading(true);
     setError('');
 
+    // DEBUG: Check what URL is being used
+    alert(`Debug: Attempting to connect to: ${API_URL}/owner/subscription/initiate`);
+    console.log('Using API URL:', API_URL);
+
     try {
       const token = localStorage.getItem('ownerToken');
       if (!token) {
