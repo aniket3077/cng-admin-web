@@ -1,4 +1,4 @@
-# Fuel Bharat Admin Panel
+# CNG Bharat Admin Panel
 
 Separate admin website for managing fuel stations.
 
@@ -12,7 +12,7 @@ npm run dev
 Visit: http://localhost:3001
 
 ## Default Login
-- Email: `admin@fuelbharat.com`
+- Email: `admin@cngbharat.com`
 - Password: `Admin@123`
 
 ## Features
