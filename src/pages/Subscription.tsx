@@ -102,10 +102,6 @@ export default function Subscription() {
     setLoading(true);
     setError('');
 
-    // DEBUG: Check what URL is being used
-    alert(`Debug: Attempting to connect to: ${API_URL}/owner/subscription/initiate`);
-    console.log('Using API URL:', API_URL);
-
     try {
       const token = localStorage.getItem('ownerToken');
       if (!token) {
@@ -114,7 +110,7 @@ export default function Subscription() {
       }
 
       // Create order
-      const response = await fetch(`${API_URL}/owner/subscription/initiate`, {
+      const response = await fetch('https://api.cngbharat.com/api/owner/subscription/initiate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +137,7 @@ export default function Subscription() {
         handler: async function (response: any) {
           // Verify payment
           try {
-            const verifyResponse = await fetch(`${API_URL}/owner/subscription/complete`, {
+            const verifyResponse = await fetch('https://api.cngbharat.com/api/owner/subscription/complete', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
