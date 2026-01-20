@@ -20,7 +20,7 @@ export default function AdminSubscriptions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://api.cngbharat.com/api';
+  const API_URL = 'https://api.cngbharat.com/api';
 
   const planPrices: Record<string, number> = {
     basic: 999,

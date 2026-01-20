@@ -2,7 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Clock, PlusCircle, CheckCircle, Navigation, Info, Loader, Fuel, Coffee, Car, BatteryCharging, DollarSign } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.cngbharat.com/api';
+const API_URL = 'https://api.cngbharat.com/api';
 
 // Convert DMS (Degrees Minutes Seconds) to Decimal Degrees
 function dmsToDecimal(dmsString: string): { lat: number; lng: number } | null {
