@@ -118,8 +118,23 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update profile');
+        const rawError = await response.text();
+        let parsedError: any = null;
+
+        if (rawError) {
+          try {
+            parsedError = JSON.parse(rawError);
+          } catch {
+            parsedError = null;
+          }
+        }
+
+        throw new Error(
+          parsedError?.message ||
+          parsedError?.error ||
+          rawError ||
+          `Failed to update profile (${response.status})`
+        );
       }
 
       // Refresh profile data
