@@ -33,6 +33,17 @@ interface SubscriptionStatus {
   expiresAt: string | null;
 }
 
+async function parseJsonSafe(response: Response): Promise<any | null> {
+  const raw = await response.text();
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export default function OwnerDashboard() {
   const [owner, setOwner] = useState<Owner | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -56,8 +67,10 @@ export default function OwnerDashboard() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setSubscription(data.subscription);
+        const data = await parseJsonSafe(response);
+        if (data?.subscription) {
+          setSubscription(data.subscription);
+        }
       }
     } catch (error) {
       console.error('Fetch subscription error:', error);
@@ -79,7 +92,10 @@ export default function OwnerDashboard() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await parseJsonSafe(response);
+        if (!data?.owner) {
+          throw new Error('Invalid profile response from server');
+        }
         setOwner(data.owner);
         localStorage.setItem('ownerUser', JSON.stringify(data.owner));
 
@@ -136,7 +152,7 @@ export default function OwnerDashboard() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
+        const errorData = await parseJsonSafe(response);
         throw new Error(errorData?.message || errorData?.error || 'Failed to update CNG quantity');
       }
 

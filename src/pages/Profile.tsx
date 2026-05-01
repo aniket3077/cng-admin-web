@@ -4,6 +4,17 @@ import { User, Mail, Phone, Building, MapPin, Edit2, Save, X, CheckCircle, Batte
 
 const API_URL = '/api';
 
+async function parseJsonSafe(response: Response): Promise<any | null> {
+  const raw = await response.text();
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export default function Profile() {
   const navigate = useNavigate();
   const [subscriberData, setSubscriberData] = useState<any>(null);
@@ -48,7 +59,10 @@ export default function Profile() {
         throw new Error('Failed to fetch profile');
       }
 
-      const data = await response.json();
+      const data = await parseJsonSafe(response);
+      if (!data?.owner) {
+        throw new Error('Invalid profile response from server');
+      }
       const owner = data.owner;
 
       setSubscriberData(owner);
@@ -118,16 +132,8 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        const rawError = await response.text();
-        let parsedError: any = null;
-
-        if (rawError) {
-          try {
-            parsedError = JSON.parse(rawError);
-          } catch {
-            parsedError = null;
-          }
-        }
+        const parsedError = await parseJsonSafe(response);
+        const rawError = typeof parsedError === 'string' ? parsedError : '';
 
         throw new Error(
           parsedError?.message ||
@@ -168,7 +174,7 @@ export default function Profile() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
+        const errorData = await parseJsonSafe(response);
         throw new Error(errorData?.message || errorData?.error || 'Failed to update CNG quantity');
       }
 
