@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
@@ -10,7 +10,9 @@ interface LayoutProps {
 
 export default function Layout({ children, showNewStationButton }: LayoutProps) {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchValue, setSearchValue] = useState('');
+    const isOwnerArea = location.pathname.startsWith('/owner/');
 
     const handleLogout = () => {
         localStorage.removeItem('adminToken');
@@ -29,6 +31,7 @@ export default function Layout({ children, showNewStationButton }: LayoutProps) 
                     searchValue={searchValue}
                     onSearchChange={setSearchValue}
                     showNewStationButton={showNewStationButton}
+                    isOwnerArea={isOwnerArea}
                 />
 
                 <main className="flex-1 overflow-y-auto overflow-x-hidden p-8 scroll-smooth relative">

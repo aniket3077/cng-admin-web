@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Bell, Plus } from 'lucide-react';
 
@@ -6,6 +7,7 @@ interface TopBarProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   showNewStationButton?: boolean;
+  isOwnerArea?: boolean;
 }
 
 export default function TopBar({
@@ -13,7 +15,29 @@ export default function TopBar({
   onSearchChange,
   searchPlaceholder = 'Search...',
   showNewStationButton = false,
+  isOwnerArea = false,
 }: TopBarProps) {
+  const [displayName, setDisplayName] = useState('Admin');
+
+  useEffect(() => {
+    if (isOwnerArea) {
+      try {
+        const ownerUser = localStorage.getItem('ownerUser');
+        if (ownerUser) {
+          const parsed = JSON.parse(ownerUser);
+          setDisplayName(parsed?.name || 'Station Owner');
+          return;
+        }
+      } catch {
+        // Fall back to the default label below.
+      }
+      setDisplayName('Station Owner');
+      return;
+    }
+
+    setDisplayName('Admin');
+  }, [isOwnerArea]);
+
   return (
     <header className="h-20 bg-white/70 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-40 px-8 flex items-center justify-between">
       {/* Search */}
@@ -54,11 +78,11 @@ export default function TopBar({
 
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-200 flex items-center justify-center text-slate-700 font-bold shadow-sm">
-              A
+              {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="hidden md:block">
-              <div className="text-sm font-medium text-slate-800">Admin</div>
-              <div className="text-xs text-slate-500">Super User</div>
+              <div className="text-sm font-medium text-slate-800">{displayName}</div>
+              <div className="text-xs text-slate-500">{isOwnerArea ? 'Station Partner' : 'Super User'}</div>
             </div>
           </div>
         </div>

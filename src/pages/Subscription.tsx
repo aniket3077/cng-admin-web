@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Loader, Zap, Star, Shield, HelpCircle, Phone } from 'lucide-react';
-
-// Declare Razorpay type
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+import { Check, Loader, Zap, Star, Shield, HelpCircle, Phone, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../services/api';
 
 interface Plan {
   id: string;
@@ -78,24 +72,56 @@ const plans: Plan[] = [
   },
 ];
 
+const readResponseJson = async (response: Response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text };
+  }
+};
+
 export default function Subscription() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [subscriptionState, setSubscriptionState] = useState<{ plan: string; isActive: boolean; isPendingApproval?: boolean; expiresAt: string | null } | null>(null);
   const navigate = useNavigate();
 
-  // Load Razorpay script
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+    const loadSubscription = async () => {
+      try {
+        const token = localStorage.getItem('ownerToken');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
 
-  const handleSubscribe = async (planId: string) => {
+        const response = await fetch(`${API_BASE_URL}/owner/subscription`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await readResponseJson(response);
+
+        if (response.ok) {
+          setSubscriptionState(data.subscription);
+        }
+      } catch (err) {
+        console.error('Failed to load subscription status:', err);
+      }
+    };
+
+    loadSubscription();
+  }, [navigate]);
+
+  const handleRequestApproval = async (planId: string) => {
     setSelectedPlan(planId);
     setLoading(true);
     setError('');
@@ -107,8 +133,7 @@ export default function Subscription() {
         return;
       }
 
-      // Create order
-      const response = await fetch('/api/owner/subscription/initiate', {
+      const response = await fetch(`${API_BASE_URL}/owner/subscription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,67 +142,18 @@ export default function Subscription() {
         body: JSON.stringify({ planId }),
       });
 
-      const data = await response.json();
+      const data = await readResponseJson(response);
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create order');
+        throw new Error(data?.error || data?.message || 'Failed to submit request');
       }
 
-      // Initialize Razorpay
-      const plan = plans.find(p => p.id === planId);
-      const options = {
-        key: data.keyId || 'rzp_test_S1MVXM8pyRYzzL', // Use key from backend or fallback
-        amount: data.amount,
-        currency: 'INR',
-        name: 'CNG Bharat',
-        description: `${plan?.name} Plan Subscription`,
-        order_id: data.orderId,
-        handler: async function (response: any) {
-          // Verify payment
-          try {
-            const verifyResponse = await fetch('/api/owner/subscription/complete', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                planId,
-              }),
-            });
-
-            const verifyData = await verifyResponse.json();
-
-            if (verifyResponse.ok) {
-              alert('Subscription activated successfully!');
-              navigate('/owner/dashboard');
-            } else {
-              throw new Error(verifyData.error || 'Payment verification failed');
-            }
-          } catch (err: any) {
-            setError(err.message || 'Payment verification failed');
-          }
-        },
-        prefill: {
-          name: data.ownerName || '',
-          email: data.ownerEmail || '',
-          contact: data.ownerPhone || '',
-        },
-        theme: {
-          color: '#f97316',
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-      setLoading(false);
+      setSubscriptionState(data.subscription || null);
+      alert('Subscription request sent to admin for approval.');
     } catch (err: any) {
-      setError(err.message || 'Failed to process subscription');
-      setLoading(false);
+      setError(err.message || 'Failed to submit request');
     }
+    setLoading(false);
   };
 
   return (
@@ -186,9 +162,29 @@ export default function Subscription() {
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-slate-800">Choose Your Plan</h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-          Unlock the full potential of CNG Bharat. List your stations, track real-time availability, and grow your business.
+          Choose a plan and send it to the admin for approval. No payment is collected from the station owner at this step.
         </p>
       </div>
+
+      {subscriptionState?.isPendingApproval && (
+        <div className="max-w-2xl mx-auto p-4 rounded-2xl border border-amber-200 bg-amber-50 text-amber-900 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5" />
+          <div>
+            <p className="font-semibold">Approval request pending</p>
+            <p className="text-sm">Your {subscriptionState.plan} plan is waiting for admin approval.</p>
+          </div>
+        </div>
+      )}
+
+      {subscriptionState?.isActive && (
+        <div className="max-w-2xl mx-auto p-4 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-900 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5" />
+          <div>
+            <p className="font-semibold">Active subscription</p>
+            <p className="text-sm">Your {subscriptionState.plan} plan is active until {subscriptionState.expiresAt ? new Date(subscriptionState.expiresAt).toLocaleDateString() : 'N/A'}.</p>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="max-w-md mx-auto p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-center flex items-center justify-center gap-2">
@@ -236,7 +232,7 @@ export default function Subscription() {
             </ul>
 
             <button
-              onClick={() => handleSubscribe(plan.id)}
+              onClick={() => handleRequestApproval(plan.id)}
               disabled={loading && selectedPlan === plan.id}
               className={`w-full py-4 px-6 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${plan.popular
                 ? 'bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-500 hover:to-blue-500 text-white shadow-lg shadow-primary-500/25'
@@ -246,12 +242,12 @@ export default function Subscription() {
               {loading && selectedPlan === plan.id ? (
                 <>
                   <Loader className="w-5 h-5 animate-spin" />
-                  Processing...
+                  Sending Request...
                 </>
               ) : (
                 <>
                   {plan.popular ? <Zap className="w-5 h-5 fill-current" /> : <Star className="w-5 h-5" />}
-                  Subscribe Now
+                  Request Approval
                 </>
               )}
             </button>
@@ -269,7 +265,7 @@ export default function Subscription() {
             <div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Need Custom Solutions?</h3>
               <p className="text-slate-500 text-sm leading-relaxed mb-4">
-                Have multiple stations or specific enterprise needs? We can tailor a plan just for you.
+                Have multiple stations or specific enterprise needs? Send your plan request and the admin team will review it.
               </p>
               <a href="tel:+919876543210" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-2 transition-colors">
                 <Phone className="w-4 h-4" /> Contact Sales
@@ -286,7 +282,7 @@ export default function Subscription() {
             <div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Safe & Secure</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
-                Secure payments via Razorpay. Cancel anytime. 24/7 dedicated support for premium partners.
+                Requests are reviewed by the admin team before a plan is activated.
               </p>
             </div>
           </div>

@@ -41,6 +41,23 @@ function dmsToDecimal(dmsString: string): { lat: number; lng: number } | null {
   return { lat, lng };
 }
 
+function normalizeCoordinatesInput(value: string): { normalized: string; lat: string; lng: string } | null {
+  const converted = dmsToDecimal(value);
+
+  if (!converted) {
+    return null;
+  }
+
+  const lat = converted.lat.toFixed(6);
+  const lng = converted.lng.toFixed(6);
+
+  return {
+    normalized: `${lat}, ${lng}`,
+    lat,
+    lng,
+  };
+}
+
 export default function AddStation() {
   const [formData, setFormData] = useState({
     name: '',
@@ -75,15 +92,15 @@ export default function AddStation() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    // Auto-convert DMS coordinates
+    // Auto-convert and normalize coordinates so pasted duplicates collapse to one pair
     if (name === 'coordinates' && value) {
-      const converted = dmsToDecimal(value);
+      const converted = normalizeCoordinatesInput(value);
       if (converted) {
         setFormData(prev => ({
           ...prev,
-          coordinates: value,
-          lat: converted.lat.toFixed(6),
-          lng: converted.lng.toFixed(6),
+          coordinates: converted.normalized,
+          lat: converted.lat,
+          lng: converted.lng,
         }));
         return;
       }

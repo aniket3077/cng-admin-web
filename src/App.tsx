@@ -9,7 +9,6 @@ import Stations from './pages/Stations';
 import AdminSubscriptions from './pages/AdminSubscriptions';
 import OwnerDashboard from './pages/OwnerDashboard';
 import AddStation from './pages/AddStation';
-import Subscription from './pages/Subscription';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
 import LandingPage from './pages/LandingPage';
@@ -17,6 +16,8 @@ import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 
@@ -44,6 +45,8 @@ function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />
 
@@ -153,7 +156,7 @@ function App() {
             element={
               <OwnerRoute>
                 <Layout>
-                  <Subscription />
+                  <Navigate to="/owner/dashboard" replace />
                 </Layout>
               </OwnerRoute>
             }

@@ -5,19 +5,24 @@ import { Mail, Lock, ArrowRight, Loader, Zap } from 'lucide-react';
 import { API_BASE_URL } from '../services/api';
 
 export default function Login() {
-  const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'admin' | 'owner'>('admin');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
-      const endpoint = isAdmin ? '/admin/login' : '/auth/subscriber/login';
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const endpoint = role === 'admin' 
+        ? `${API_BASE_URL}/auth/admin/login` 
+        : `${API_BASE_URL}/auth/subscriber/login`;
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,11 +36,10 @@ export default function Login() {
         throw new Error(data.error || data.message || 'Login failed');
       }
 
-      // Store token based on user type
-      if (isAdmin) {
+      if (role === 'admin') {
         localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminUser', JSON.stringify(data.admin));
         localStorage.removeItem('ownerToken');
-        localStorage.removeItem('ownerUser');
         navigate('/dashboard');
       } else {
         localStorage.setItem('ownerToken', data.token);
@@ -45,7 +49,7 @@ export default function Login() {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      alert(error.message || 'Login failed. Please check your credentials.');
+      setError(error.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -69,29 +73,43 @@ export default function Login() {
         </div>
 
         <div className="glass-card p-8 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl">
-          {/* Toggle User Type */}
-          <div className="bg-slate-900/50 p-1 rounded-xl flex mb-8">
-            <button
-              onClick={() => setIsAdmin(false)}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isAdmin
-                ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
-                : 'text-slate-400 hover:text-slate-200'
+          <div className="mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
+              Select login type
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setRole('admin')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                  role === 'admin'
+                    ? 'bg-gradient-to-r from-primary-500 to-lime-500 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
-            >
-              Station Owner
-            </button>
-            <button
-              onClick={() => setIsAdmin(true)}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isAdmin
-                ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
-                : 'text-slate-400 hover:text-slate-200'
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('owner')}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                  role === 'owner'
+                    ? 'bg-gradient-to-r from-primary-500 to-lime-500 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
-            >
-              Admin
-            </button>
+              >
+                Station Owner
+              </button>
+            </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6" noValidate>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
               <div className="relative group">
@@ -137,7 +155,17 @@ export default function Login() {
                 <input id="rememberMe" name="rememberMe" type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
                 <span className="text-slate-500">Remember me</span>
               </label>
-              <a href="#" className="text-primary-600 hover:text-primary-700 transition-colors">Forgot password?</a>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('Forgot password clicked');
+                  navigate('/forgot-password');
+                }}
+                className="text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                Forgot password?
+              </button>
             </div>
 
             <button

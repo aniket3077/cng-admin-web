@@ -1,6 +1,7 @@
 {
   "name": "cng-bharat",
   "version": "1.0.0",
+  "author": "Aniket Bankar <bankaraniketk@gmail.com>",
   "type": "module",
   "scripts": {
     "dev": "vite --port 3001",

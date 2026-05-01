@@ -14,9 +14,23 @@ interface SubscriptionRequest {
   expiresAt?: string;
 }
 
+interface PendingRequestOwner {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  subscriptionType?: string | null;
+  subscriptionEndsAt?: string | null;
+  _count?: {
+    stations: number;
+    supportTickets: number;
+  };
+}
+
 export default function AdminSubscriptions() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionRequest[]>([]);
-  const [owners, setOwners] = useState<any[]>([]); // For the "Owners without subscription" table
+  const [owners, setOwners] = useState<PendingRequestOwner[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
@@ -49,7 +63,7 @@ export default function AdminSubscriptions() {
       setOwners(data.owners || []);
 
       const subs = data.owners
-        .filter((owner: any) => owner.subscriptionType)
+        .filter((owner: PendingRequestOwner) => owner.subscriptionType && owner.subscriptionEndsAt)
         .map((owner: any) => ({
           id: owner.id,
           ownerId: owner.id,
@@ -70,7 +84,7 @@ export default function AdminSubscriptions() {
     }
   };
 
-  const handleActivateSubscription = async (ownerId: string, planType: string) => {
+  const handleApproveSubscription = async (ownerId: string, planType: string) => {
     try {
       const token = localStorage.getItem('adminToken');
       const expiryDate = new Date();
@@ -93,7 +107,34 @@ export default function AdminSubscriptions() {
       fetchData();
     } catch (error) {
       console.error('Error activating subscription:', error);
-      alert('Failed to activate subscription');
+      alert('Failed to approve subscription');
+    }
+  };
+
+  const handleRejectSubscription = async (ownerId: string) => {
+    if (!confirm('Reject this subscription request?')) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+
+      const response = await fetch(`${API_URL}/admin/owners/${ownerId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subscriptionType: null,
+          subscriptionEndsAt: null,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to reject subscription');
+
+      fetchData();
+    } catch (error) {
+      console.error('Error rejecting subscription:', error);
+      alert('Failed to reject subscription');
     }
   };
 
@@ -147,6 +188,8 @@ export default function AdminSubscriptions() {
 
   const activeCount = subscriptions.filter(s => s.status === 'active').length;
   const expiredCount = subscriptions.filter(s => s.status === 'expired').length;
+  const pendingRequests = owners.filter(owner => owner.subscriptionType && !owner.subscriptionEndsAt);
+  const pendingCount = pendingRequests.length;
   const totalRevenue = subscriptions.reduce((sum, s) => sum + s.amount, 0);
 
   return (
@@ -192,6 +235,16 @@ export default function AdminSubscriptions() {
         </div>
 
         <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-amber-500 text-amber-500">
+            <Clock className="w-24 h-24" />
+          </div>
+          <div className="relative z-10">
+            <p className="text-slate-500 text-sm font-medium">Pending Approval</p>
+            <h3 className="text-3xl font-bold text-amber-600 mt-1">{pendingCount}</h3>
+          </div>
+        </div>
+
+        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-purple-500 text-purple-500">
             <Filter className="w-24 h-24" />
           </div>
@@ -216,6 +269,67 @@ export default function AdminSubscriptions() {
             {status}
           </button>
         ))}
+      </div>
+
+      {/* Pending Requests */}
+      <div className="mt-12">
+        <h2 className="text-xl font-bold text-slate-800 mb-6">Pending Subscription Requests</h2>
+        <div className="glass-card rounded-xl overflow-hidden border border-white/60 bg-white/50 shadow-sm">
+          {pendingRequests.length === 0 ? (
+            <div className="text-center py-16 text-slate-500">No pending requests.</div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/50 text-xs uppercase text-slate-500 font-bold tracking-wider">
+                  <th className="p-6">Owner</th>
+                  <th className="p-6">Requested Plan</th>
+                  <th className="p-6">Requested At</th>
+                  <th className="p-6">Stations</th>
+                  <th className="p-6">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pendingRequests.map((owner) => (
+                  <tr key={owner.id} className="group hover:bg-slate-50/80 transition-colors">
+                    <td className="p-6">
+                      <div>
+                        <p className="font-bold text-slate-800">{owner.name}</p>
+                        <p className="text-xs text-slate-500">{owner.email}</p>
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold border bg-amber-50 text-amber-700 border-amber-200 uppercase tracking-wider">
+                        {owner.subscriptionType}
+                      </span>
+                    </td>
+                    <td className="p-6 text-slate-500 text-sm">
+                      {formatDate(owner.updatedAt)}
+                    </td>
+                    <td className="p-6 text-slate-600">
+                      {owner._count?.stations || 0}
+                    </td>
+                    <td className="p-6">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleApproveSubscription(owner.id, owner.subscriptionType || 'basic')}
+                          className="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectSubscription(owner.id)}
+                          className="px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* Subscriptions Table */}
@@ -273,7 +387,7 @@ export default function AdminSubscriptions() {
                       <div className="flex items-center gap-2">
                         {sub.status === 'expired' && (
                           <button
-                            onClick={() => handleActivateSubscription(sub.ownerId, sub.planType)}
+                            onClick={() => handleApproveSubscription(sub.ownerId, sub.planType)}
                             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                             title="Renew"
                           >
@@ -333,7 +447,7 @@ export default function AdminSubscriptions() {
                       name={`assignPlan-${owner.id}`}
                       onChange={(e) => {
                         if (e.target.value) {
-                          handleActivateSubscription(owner.id, e.target.value);
+                          handleApproveSubscription(owner.id, e.target.value);
                           e.target.value = '';
                         }
                       }}

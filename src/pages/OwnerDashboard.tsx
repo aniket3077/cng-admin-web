@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Settings, Zap, BatteryCharging, User, LayoutDashboard, PlusCircle, CreditCard, ChevronRight, MapPin, CheckCircle, AlertCircle, TrendingUp, Shield, BarChart3, Edit2, X, Loader } from 'lucide-react';
+import { Settings, BatteryCharging, User, LayoutDashboard, PlusCircle, ChevronRight, MapPin, CheckCircle, AlertCircle, TrendingUp, Shield, BarChart3, Edit2, X, Loader } from 'lucide-react';
 
 interface Station {
   id: string;
@@ -29,6 +29,7 @@ interface Owner {
 interface SubscriptionStatus {
   plan: string;
   isActive: boolean;
+  isPendingApproval?: boolean;
   expiresAt: string | null;
 }
 
@@ -199,8 +200,8 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
-      {/* Subscription Banner */}
-      {subscription && subscription.isActive ? (
+      {/* Subscription status is handled by admin approval now */}
+      {subscription && subscription.isActive && (
         <div className="relative overflow-hidden rounded-2xl glass-card border border-primary-200 p-8 shadow-xl shadow-primary-500/10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
 
@@ -224,30 +225,8 @@ export default function OwnerDashboard() {
                 </p>
               </div>
             </div>
-            <Link to="/owner/subscription" className="px-6 py-3 bg-white text-primary-600 border border-primary-100 rounded-xl font-bold hover:bg-primary-50 transition-colors shadow-sm">
-              Manage Plan
-            </Link>
           </div>
         </div>
-      ) : (
-        <Link to="/owner/subscription" className="block group">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-8 transition-transform transform hover:-translate-y-1 hover:shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                  <Zap className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-1">Boost Your Visibility! 🚀</h2>
-                  <p className="text-white/80 text-sm">Subscribe now to get listed on CNG Bharat and reach thousands of customers.</p>
-                </div>
-              </div>
-              <div className="px-6 py-3 bg-white text-blue-600 rounded-xl font-bold group-hover:bg-slate-100 transition-colors flex items-center gap-2">
-                View Plans <ChevronRight className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-        </Link>
       )}
 
       {/* Stats Grid */}
@@ -446,12 +425,6 @@ export default function OwnerDashboard() {
               <PlusCircle className="w-5 h-5" />
             </div>
             <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900">Add Station</span>
-          </Link>
-          <Link to="/owner/subscription" className="p-4 bg-white/60 hover:bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col items-center gap-3 transition-all hover:-translate-y-1 group">
-            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-500 group-hover:text-white transition-colors">
-              <CreditCard className="w-5 h-5" />
-            </div>
-            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900">Subscription</span>
           </Link>
           <Link to="/owner/profile" className="p-4 bg-white/60 hover:bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col items-center gap-3 transition-all hover:-translate-y-1 group">
             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-colors">

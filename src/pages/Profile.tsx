@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, Building, MapPin, Navigation, Edit2, Save, X, CheckCircle, BatteryCharging, TrendingUp, AlertCircle, Info, Loader } from 'lucide-react';
+import { User, Mail, Phone, Building, MapPin, Edit2, Save, X, CheckCircle, BatteryCharging, TrendingUp, AlertCircle, Loader } from 'lucide-react';
 
 const API_URL = '/api';
 
@@ -18,40 +18,11 @@ export default function Profile() {
     address: '',
     city: '',
     state: '',
-    lat: '',
-    lng: '',
   });
-  const [geocoding, setGeocoding] = useState(false);
   const [cngQuantity, setCngQuantity] = useState<{ [key: string]: number }>({});
   const [editingQuantity, setEditingQuantity] = useState<string | null>(null);
   const [tempQuantity, setTempQuantity] = useState<string>('');
   const [updatingCng, setUpdatingCng] = useState<string | null>(null);
-
-  // Convert DMS (Degrees Minutes Seconds) to Decimal Degrees
-  const parseDMS = (dmsString: string): { lat: number; lng: number } | null => {
-    try {
-      // Match patterns like: 19°51'10.6"N 75°18'57.7"E
-      const regex = /(\d+)°(\d+)'([\d.]+)"([NS])\s+(\d+)°(\d+)'([\d.]+)"([EW])/;
-      const match = dmsString.match(regex);
-
-      if (!match) return null;
-
-      const [, latDeg, latMin, latSec, latDir, lngDeg, lngMin, lngSec, lngDir] = match;
-
-      // Convert to decimal
-      let lat = parseFloat(latDeg) + parseFloat(latMin) / 60 + parseFloat(latSec) / 3600;
-      let lng = parseFloat(lngDeg) + parseFloat(lngMin) / 60 + parseFloat(lngSec) / 3600;
-
-      // Apply direction
-      if (latDir === 'S') lat = -lat;
-      if (lngDir === 'W') lng = -lng;
-
-      return { lat, lng };
-    } catch (error) {
-      console.error('DMS parsing error:', error);
-      return null;
-    }
-  };
 
   const fetchProfile = async () => {
     try {
@@ -91,8 +62,6 @@ export default function Profile() {
         address: owner.address || '',
         city: owner.city || '',
         state: owner.state || '',
-        lat: owner.stations?.[0]?.lat?.toString() || '',
-        lng: owner.stations?.[0]?.lng?.toString() || '',
       });
 
       // Set CNG quantity for all stations
@@ -118,70 +87,10 @@ export default function Profile() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    // Auto-detect and convert DMS format for lat/lng fields
-    if ((name === 'lat' || name === 'lng') && value.includes('°')) {
-      const parsed = parseDMS(value);
-      if (parsed) {
-        setFormData({
-          ...formData,
-          lat: parsed.lat.toFixed(6),
-          lng: parsed.lng.toFixed(6),
-        });
-        return;
-      }
-    }
-
     setFormData({
       ...formData,
       [name]: value,
     });
-  };
-
-  const handleGetCoordinates = async () => {
-    // First check if DMS coordinates are already in the fields
-    if (formData.lat && formData.lat.includes('°')) {
-      const parsed = parseDMS(`${formData.lat} ${formData.lng}`);
-      if (parsed) {
-        setFormData(prev => ({
-          ...prev,
-          lat: parsed.lat.toFixed(6),
-          lng: parsed.lng.toFixed(6),
-        }));
-        alert('DMS coordinates converted to decimal format!');
-        return;
-      }
-    }
-
-    if (!formData.address || !formData.city || !formData.state) {
-      alert('Please enter address, city, and state first');
-      return;
-    }
-
-    setGeocoding(true);
-    try {
-      const fullAddress = `${formData.address}, ${formData.city}, ${formData.state}, India`;
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`;
-
-      const response = await fetch(geocodeUrl);
-      const data = await response.json();
-
-      if (data.status === 'OK' && data.results[0]) {
-        const location = data.results[0].geometry.location;
-        setFormData(prev => ({
-          ...prev,
-          lat: location.lat.toFixed(6),
-          lng: location.lng.toFixed(6),
-        }));
-        alert('Coordinates fetched successfully!');
-      } else {
-        alert('Could not find coordinates for this address. Try pasting DMS coordinates directly in the Latitude field below.');
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      alert('Failed to get coordinates. You can paste DMS coordinates directly in the Latitude field.');
-    } finally {
-      setGeocoding(false);
-    }
   };
 
   const handleSave = async () => {
@@ -197,8 +106,6 @@ export default function Profile() {
         address: formData.address,
         city: formData.city,
         state: formData.state,
-        lat: formData.lat ? parseFloat(formData.lat) : undefined,
-        lng: formData.lng ? parseFloat(formData.lng) : undefined,
       };
 
       const response = await fetch(`${API_URL}/owner/profile`, {
@@ -393,7 +300,7 @@ export default function Profile() {
             <div className="h-px bg-slate-200 my-6"></div>
 
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Station Location
+              <MapPin className="w-4 h-4" /> Contact Details
             </h3>
 
             <div className="space-y-6">
@@ -435,63 +342,6 @@ export default function Profile() {
                   />
                 </div>
               </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="lat" className="text-sm text-slate-600">Latitude</label>
-                  <div className="relative">
-                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      id="lat"
-                      type="text"
-                      name="lat"
-                      value={formData.lat}
-                      onChange={handleChange}
-                      disabled={!editing}
-                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder="19.8534"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="lng" className="text-sm text-slate-600">Longitude</label>
-                  <div className="relative">
-                    <Navigation className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      id="lng"
-                      type="text"
-                      name="lng"
-                      value={formData.lng}
-                      onChange={handleChange}
-                      disabled={!editing}
-                      className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 outline-none transition-all font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                      placeholder="75.3142"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {editing && (
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-                  <div className="flex items-start gap-3 mb-3">
-                    <Info className="w-5 h-5 text-blue-400 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-blue-300 font-medium mb-1">Coordinates Helper</p>
-                      <p className="text-xs text-blue-200/70">
-                        You can paste coordinates from Google Maps directly. We support both decimal and DMS formats.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleGetCoordinates}
-                    disabled={geocoding}
-                    className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-4 py-2 rounded-lg text-sm transition-colors border border-blue-500/30 disabled:opacity-50"
-                  >
-                    {geocoding ? 'Fetching...' : '📍 Auto-fill from Address'}
-                  </button>
-                </div>
-              )}
             </div>
 
             {editing && (
