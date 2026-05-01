@@ -4,6 +4,17 @@ import { Mail, Lock, ArrowRight, Loader, Zap } from 'lucide-react';
 
 import { API_BASE_URL } from '../services/api';
 
+async function parseJsonSafe(response: Response): Promise<any | null> {
+  const raw = await response.text();
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,22 +29,55 @@ export default function Login() {
     setError('');
 
     try {
-      const endpoint = role === 'admin' 
-        ? `${API_BASE_URL}/auth/admin/login` 
-        : `${API_BASE_URL}/auth/subscriber/login`;
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const path = role === 'admin' ? '/auth/admin/login' : '/auth/subscriber/login';
+      const endpoints = Array.from(new Set([
+        `${API_BASE_URL}${path}`,
+        `/api${path}`,
+      ]));
 
-      const data = await response.json();
+      let response: Response | null = null;
+      let data: any = null;
+      let lastNetworkError: Error | null = null;
 
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Login failed');
+      for (const endpoint of endpoints) {
+        try {
+          const currentResponse = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const currentData = await parseJsonSafe(currentResponse);
+
+          if (!currentResponse.ok) {
+            // Try fallback endpoint only when upstream endpoint is unavailable.
+            if (currentResponse.status >= 500 && endpoint !== endpoints[endpoints.length - 1]) {
+              continue;
+            }
+
+            throw new Error(currentData?.error || currentData?.message || `Login failed (${currentResponse.status})`);
+          }
+
+          response = currentResponse;
+          data = currentData;
+          break;
+        } catch (err) {
+          if (err instanceof TypeError) {
+            lastNetworkError = err;
+            continue;
+          }
+          throw err;
+        }
+      }
+
+      if (!response) {
+        throw lastNetworkError || new Error('Failed to fetch');
+      }
+
+      if (!data) {
+        throw new Error('Invalid login response from server');
       }
 
       if (role === 'admin') {
