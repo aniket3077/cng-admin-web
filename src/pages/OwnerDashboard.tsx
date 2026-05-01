@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Settings, BatteryCharging, User, LayoutDashboard, PlusCircle, ChevronRight, MapPin, CheckCircle, AlertCircle, TrendingUp, Shield, BarChart3, Edit2, X, Loader } from 'lucide-react';
+import { Settings, BatteryCharging, User, LayoutDashboard, PlusCircle, Zap, MapPin, CheckCircle, AlertCircle, TrendingUp, Shield, BarChart3, Edit2, X, Loader } from 'lucide-react';
 
 interface Station {
   id: string;
