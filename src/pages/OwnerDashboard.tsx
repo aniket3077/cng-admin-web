@@ -136,7 +136,8 @@ export default function OwnerDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update CNG quantity');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || errorData?.error || 'Failed to update CNG quantity');
       }
 
       const newAvailable = quantity > 0;
@@ -160,9 +161,9 @@ export default function OwnerDashboard() {
       setEditingQuantity(null);
       setTempQuantity('');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('CNG quantity update error:', error);
-      alert('Failed to update CNG quantity');
+      alert(error?.message || 'Failed to update CNG quantity');
     } finally {
       setUpdatingCng(null);
     }
