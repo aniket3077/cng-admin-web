@@ -60,10 +60,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const hadAdminSession = Boolean(localStorage.getItem('adminToken'));
       localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
       localStorage.removeItem('ownerToken');
       localStorage.removeItem('ownerUser');
-      window.location.href = '/login';
+      window.location.href = hadAdminSession ? '/admin/login' : '/login';
     }
     return Promise.reject(error);
   }

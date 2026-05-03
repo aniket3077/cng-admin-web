@@ -16,10 +16,11 @@ export default function Layout({ children, showNewStationButton }: LayoutProps) 
 
     const handleLogout = () => {
         localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
         localStorage.removeItem('ownerToken');
         localStorage.removeItem('ownerUser');
         localStorage.removeItem('userType');
-        navigate('/login');
+        navigate(isOwnerArea ? '/login' : '/admin/login');
     };
 
     return (

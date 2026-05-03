@@ -24,7 +24,7 @@ import Terms from './pages/Terms';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('adminToken');
-  return token ? <>{children}</> : <Navigate to="/login" replace />;
+  return token ? <>{children}</> : <Navigate to="/admin/login" replace />;
 }
 
 function OwnerRoute({ children }: { children: React.ReactNode }) {
@@ -38,7 +38,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login mode="owner" />} />
+          <Route path="/admin/login" element={<Login mode="admin" />} />
           <Route path="/signup" element={<Signup />} />
 
           {/* Public Pages */}

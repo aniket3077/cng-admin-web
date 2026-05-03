@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ArrowRight, Loader, Zap } from 'lucide-react';
+import { ArrowRight, Loader, Lock, Mail, Shield, Zap } from 'lucide-react';
 
 import { API_BASE_URL } from '../services/api';
+
+type LoginMode = 'owner' | 'admin';
+
+interface LoginProps {
+  mode?: LoginMode;
+}
 
 async function parseJsonSafe(response: Response): Promise<any | null> {
   const raw = await response.text();
@@ -15,13 +21,20 @@ async function parseJsonSafe(response: Response): Promise<any | null> {
   }
 }
 
-export default function Login() {
+export default function Login({ mode = 'owner' }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'owner'>('admin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const isAdminMode = mode === 'admin';
+
+  useEffect(() => {
+    const existingToken = localStorage.getItem(isAdminMode ? 'adminToken' : 'ownerToken');
+    if (existingToken) {
+      navigate(isAdminMode ? '/dashboard' : '/owner/dashboard', { replace: true });
+    }
+  }, [isAdminMode, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +42,7 @@ export default function Login() {
     setError('');
 
     try {
-      const path = role === 'admin' ? '/auth/admin/login' : '/auth/subscriber/login';
+      const path = isAdminMode ? '/auth/admin/login' : '/auth/subscriber/login';
       const endpoints = Array.from(new Set([
         `${API_BASE_URL}${path}`,
         `/api${path}`,
@@ -52,7 +65,6 @@ export default function Login() {
           const currentData = await parseJsonSafe(currentResponse);
 
           if (!currentResponse.ok) {
-            // Try fallback endpoint only when upstream endpoint is unavailable.
             if (currentResponse.status >= 500 && endpoint !== endpoints[endpoints.length - 1]) {
               continue;
             }
@@ -80,15 +92,17 @@ export default function Login() {
         throw new Error('Invalid login response from server');
       }
 
-      if (role === 'admin') {
+      if (isAdminMode) {
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminUser', JSON.stringify(data.admin));
         localStorage.removeItem('ownerToken');
+        localStorage.removeItem('ownerUser');
         navigate('/dashboard');
       } else {
         localStorage.setItem('ownerToken', data.token);
         localStorage.setItem('ownerUser', JSON.stringify(data.owner));
         localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
         navigate('/owner/dashboard');
       }
     } catch (error: any) {
@@ -101,7 +115,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-200/40 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-lime-200/40 rounded-full blur-[120px]"></div>
@@ -109,43 +122,27 @@ export default function Login() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-lime-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary-500/20">
-            <Zap className="w-8 h-8 text-white" />
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl ${isAdminMode ? 'bg-gradient-to-br from-slate-700 to-slate-900 shadow-slate-700/20' : 'bg-gradient-to-br from-primary-400 to-lime-500 shadow-primary-500/20'}`}>
+            {isAdminMode ? <Shield className="w-8 h-8 text-white" /> : <Zap className="w-8 h-8 text-white" />}
           </div>
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Welcome Back</h1>
-          <p className="text-slate-500">Sign in to manage your CNG stations</p>
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">{isAdminMode ? 'Admin Access' : 'Welcome Back'}</h1>
+          <p className="text-slate-500">
+            {isAdminMode ? 'Authorized administrators only.' : 'Sign in to manage your CNG stations'}
+          </p>
         </div>
 
         <div className="glass-card p-8 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl">
-          <div className="mb-6">
-            <p className="text-sm text-slate-500 text-center mb-3">
-              Select login type
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setRole('admin')}
-                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                  role === 'admin'
-                    ? 'bg-gradient-to-r from-primary-500 to-lime-500 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('owner')}
-                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                  role === 'owner'
-                    ? 'bg-gradient-to-r from-primary-500 to-lime-500 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Station Owner
-              </button>
+          {isAdminMode ? (
+            <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              This sign-in is reserved for internal admin access and is intentionally separated from the public partner login.
             </div>
-          </div>
+          ) : (
+            <div className="mb-6">
+              <p className="text-sm text-slate-500 text-center">
+                Station owner sign-in
+              </p>
+            </div>
+          )}
 
           {error && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -189,33 +186,34 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input id="rememberMe" name="rememberMe" type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
-                <span className="text-slate-500">Remember me</span>
-              </label>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log('Forgot password clicked');
-                  navigate('/forgot-password');
-                }}
-                className="text-primary-600 hover:text-primary-700 transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
+            {!isAdminMode && (
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input id="rememberMe" name="rememberMe" type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
+                  <span className="text-slate-500">Remember me</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/forgot-password');
+                  }}
+                  className="text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-500 to-lime-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
+              className={`w-full text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 group ${isAdminMode ? 'bg-gradient-to-r from-slate-800 to-slate-900 shadow-slate-800/20 hover:shadow-slate-800/30' : 'bg-gradient-to-r from-primary-500 to-lime-500 shadow-primary-500/25 hover:shadow-primary-500/40'}`}
             >
               {loading ? (
                 <Loader className="w-5 h-5 animate-spin" />
@@ -229,15 +227,24 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-slate-400 text-sm">
-              Don't have an account?{' '}
+            {isAdminMode ? (
               <button
-                onClick={() => navigate('/signup')}
-                className="text-white font-medium hover:text-primary-400 transition-colors"
+                onClick={() => navigate('/login')}
+                className="text-slate-500 text-sm hover:text-primary-600 transition-colors"
               >
-                Create account
+                Go to station owner sign-in
               </button>
-            </p>
+            ) : (
+              <p className="text-slate-400 text-sm">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="text-white font-medium hover:text-primary-400 transition-colors"
+                >
+                  Create account
+                </button>
+              </p>
+            )}
           </div>
         </div>
       </div>

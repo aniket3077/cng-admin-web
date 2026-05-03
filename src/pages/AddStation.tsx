@@ -138,7 +138,7 @@ export default function AddStation() {
     try {
       const token = localStorage.getItem(isOwnerArea ? 'ownerToken' : 'adminToken');
       if (!token) {
-        navigate('/login');
+        navigate(isOwnerArea ? '/login' : '/admin/login');
         return;
       }
 
@@ -395,7 +395,7 @@ export default function AddStation() {
           <div className="flex gap-4 pt-4 border-t border-slate-200">
             <button
               type="button"
-              onClick={() => navigate('/owner/dashboard')}
+              onClick={() => navigate(isOwnerArea ? '/owner/dashboard' : '/stations')}
               className="px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100 transition-colors"
             >
               Cancel
