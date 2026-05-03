@@ -4,6 +4,7 @@ import {
   MapPin,
   Users,
   CreditCard,
+  MessageSquare,
   PlusCircle,
   User,
   LogOut
@@ -72,6 +73,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
             <NavItem to="/stations" icon={MapPin} label="Stations" />
             <NavItem to="/owners" icon={Users} label="Owners" />
             <NavItem to="/users" icon={User} label="Users" />
+            <NavItem to="/support" icon={MessageSquare} label="Support" />
             <NavItem to="/subscriptions" icon={CreditCard} label="Subscriptions" />
           </>
         )}

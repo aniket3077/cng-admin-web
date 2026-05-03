@@ -51,6 +51,9 @@ export interface Station {
   openingHours?: string;
   amenities?: string;
   isVerified: boolean;
+  cngAvailable?: boolean;
+  cngQuantityKg?: number;
+  cngUpdatedAt?: string;
   approvalStatus?: string;
   rejectionReason?: string;
   ownerId?: string;
@@ -207,11 +210,12 @@ export const adminApi = {
   },
 
   // Station Management
-  getStations: async (page = 1, search = '', verified?: boolean, approvalStatus?: string) => {
+  getStations: async (page = 1, search = '', verified?: boolean, approvalStatus?: string, cngAvailable?: boolean) => {
     const params: any = { page };
     if (search) params.search = search;
     if (verified !== undefined) params.verified = verified;
     if (approvalStatus) params.approvalStatus = approvalStatus;
+    if (cngAvailable !== undefined) params.cngAvailable = cngAvailable;
     const response = await api.get('/admin/stations', { params });
     const data = response.data;
     return {
@@ -228,12 +232,12 @@ export const adminApi = {
   },
 
   updateStation: async (id: string, data: any) => {
-    const response = await api.put('/admin/stations', { id, ...data });
+    const response = await api.put(`/admin/stations/${id}`, data);
     return response.data;
   },
 
   deleteStation: async (id: string) => {
-    const response = await api.delete('/admin/stations?id=' + id);
+    const response = await api.delete(`/admin/stations/${id}`);
     return response.data;
   },
 
@@ -245,12 +249,12 @@ export const adminApi = {
   },
 
   updateOwner: async (id: string, data: { status?: string; kycStatus?: string; kycRejectionReason?: string; emailVerified?: boolean; phoneVerified?: boolean }) => {
-    const response = await api.put(`/admin/owners?id=${id}`, data);
+    const response = await api.put(`/admin/owners/${id}`, data);
     return response.data;
   },
 
   deleteOwner: async (id: string) => {
-    const response = await api.delete(`/admin/owners?id=${id}`);
+    const response = await api.delete(`/admin/owners/${id}`);
     return response.data;
   },
 
@@ -273,13 +277,13 @@ export const adminApi = {
   },
 
   // Support Ticket Management
-  getTickets: async (page = 1, filters?: { status?: string; category?: string; priority?: string }) => {
+  getTickets: async (page = 1, filters?: { status?: string; category?: string; priority?: string; search?: string }) => {
     const params: any = { page, ...filters };
     const response = await api.get<TicketsResponse>('/admin/support', { params });
     return response.data;
   },
 
-  updateTicket: async (id: string, data: { status?: string; assignedTo?: string; resolution?: string }) => {
+  updateTicket: async (id: string, data: { status?: string; assignedTo?: string; resolution?: string; priority?: string }) => {
     const response = await api.put(`/admin/support?id=${id}`, data);
     return response.data;
   },

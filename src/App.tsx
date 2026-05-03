@@ -11,6 +11,7 @@ import OwnerDashboard from './pages/OwnerDashboard';
 import AddStation from './pages/AddStation';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
+import Support from './pages/Support';
 import LandingPage from './pages/LandingPage';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
@@ -115,6 +116,16 @@ function App() {
               <PrivateRoute>
                 <Layout>
                   <Users />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Support />
                 </Layout>
               </PrivateRoute>
             }

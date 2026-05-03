@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Filter, CreditCard, CheckCircle, Clock, RotateCcw, Ban, Loader } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Ban, CheckCircle, Clock, CreditCard, Filter, Loader, RotateCcw } from 'lucide-react';
+import { API_BASE_URL } from '../services/api';
 
 interface SubscriptionRequest {
   id: string;
@@ -9,7 +10,6 @@ interface SubscriptionRequest {
   planType: string;
   status: string;
   amount: number;
-  requestedAt: string;
   activatedAt?: string;
   expiresAt?: string;
 }
@@ -34,8 +34,6 @@ export default function AdminSubscriptions() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  const API_URL = '/api';
-
   const planPrices: Record<string, number> = {
     basic: 999,
     standard: 2499,
@@ -51,32 +49,35 @@ export default function AdminSubscriptions() {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
 
-      const response = await fetch(`${API_URL}/admin/owners?page=1&limit=100`, {
+      const response = await fetch(`${API_BASE_URL}/admin/owners?page=1&limit=100`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) throw new Error('Failed to fetch data');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
 
       const data = await response.json();
-      setOwners(data.owners || []);
+      const nextOwners = data.owners || [];
+      setOwners(nextOwners);
 
-      const subs = data.owners
+      const nextSubscriptions = nextOwners
         .filter((owner: PendingRequestOwner) => owner.subscriptionType && owner.subscriptionEndsAt)
-        .map((owner: any) => ({
+        .map((owner: PendingRequestOwner) => ({
           id: owner.id,
           ownerId: owner.id,
           ownerName: owner.name,
           ownerEmail: owner.email,
-          planType: owner.subscriptionType,
+          planType: owner.subscriptionType || 'basic',
           status: owner.subscriptionEndsAt && new Date(owner.subscriptionEndsAt) > new Date() ? 'active' : 'expired',
-          amount: planPrices[owner.subscriptionType] || 0,
+          amount: planPrices[owner.subscriptionType || 'basic'] || 0,
           activatedAt: owner.updatedAt,
-          expiresAt: owner.subscriptionEndsAt,
+          expiresAt: owner.subscriptionEndsAt || undefined,
         }));
 
-      setSubscriptions(subs);
+      setSubscriptions(nextSubscriptions);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -84,25 +85,32 @@ export default function AdminSubscriptions() {
     }
   };
 
+  const updateSubscription = async (ownerId: string, body: { subscriptionType: string | null; subscriptionEndsAt: string | null }) => {
+    const token = localStorage.getItem('adminToken');
+
+    const response = await fetch(`${API_BASE_URL}/admin/owners/${ownerId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update subscription');
+    }
+  };
+
   const handleApproveSubscription = async (ownerId: string, planType: string) => {
     try {
-      const token = localStorage.getItem('adminToken');
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 30);
 
-      const response = await fetch(`${API_URL}/admin/owners/${ownerId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriptionType: planType,
-          subscriptionEndsAt: expiryDate.toISOString(),
-        }),
+      await updateSubscription(ownerId, {
+        subscriptionType: planType,
+        subscriptionEndsAt: expiryDate.toISOString(),
       });
-
-      if (!response.ok) throw new Error('Failed to activate subscription');
 
       fetchData();
     } catch (error) {
@@ -112,24 +120,15 @@ export default function AdminSubscriptions() {
   };
 
   const handleRejectSubscription = async (ownerId: string) => {
-    if (!confirm('Reject this subscription request?')) return;
+    if (!confirm('Reject this subscription request?')) {
+      return;
+    }
 
     try {
-      const token = localStorage.getItem('adminToken');
-
-      const response = await fetch(`${API_URL}/admin/owners/${ownerId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriptionType: null,
-          subscriptionEndsAt: null,
-        }),
+      await updateSubscription(ownerId, {
+        subscriptionType: null,
+        subscriptionEndsAt: null,
       });
-
-      if (!response.ok) throw new Error('Failed to reject subscription');
 
       fetchData();
     } catch (error) {
@@ -139,24 +138,15 @@ export default function AdminSubscriptions() {
   };
 
   const handleDeactivateSubscription = async (ownerId: string) => {
-    if (!confirm('Are you sure you want to deactivate this subscription?')) return;
+    if (!confirm('Are you sure you want to deactivate this subscription?')) {
+      return;
+    }
 
     try {
-      const token = localStorage.getItem('adminToken');
-
-      const response = await fetch(`${API_URL}/admin/owners/${ownerId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriptionType: null,
-          subscriptionEndsAt: null,
-        }),
+      await updateSubscription(ownerId, {
+        subscriptionType: null,
+        subscriptionEndsAt: null,
       });
-
-      if (!response.ok) throw new Error('Failed to deactivate subscription');
 
       fetchData();
     } catch (error) {
@@ -171,7 +161,8 @@ export default function AdminSubscriptions() {
       standard: 'bg-blue-50 text-blue-600 border-blue-200',
       premium: 'bg-purple-50 text-purple-600 border-purple-200',
     };
-    return `px-3 py-1 rounded-full text-xs font-bold border ${badges[plan] || 'bg-slate-100 text-slate-600 border-slate-200'} uppercase tracking-wider`;
+
+    return `px-3 py-1 rounded-full text-xs font-bold border ${badges[plan] || badges.basic} uppercase tracking-wider`;
   };
 
   const formatDate = (dateString: string) => {
@@ -184,17 +175,16 @@ export default function AdminSubscriptions() {
 
   const filteredSubscriptions = filter === 'all'
     ? subscriptions
-    : subscriptions.filter(s => s.status === filter);
+    : subscriptions.filter((subscription) => subscription.status === filter);
 
-  const activeCount = subscriptions.filter(s => s.status === 'active').length;
-  const expiredCount = subscriptions.filter(s => s.status === 'expired').length;
-  const pendingRequests = owners.filter(owner => owner.subscriptionType && !owner.subscriptionEndsAt);
+  const activeCount = subscriptions.filter((subscription) => subscription.status === 'active').length;
+  const expiredCount = subscriptions.filter((subscription) => subscription.status === 'expired').length;
+  const pendingRequests = owners.filter((owner) => owner.subscriptionType && !owner.subscriptionEndsAt);
   const pendingCount = pendingRequests.length;
-  const totalRevenue = subscriptions.reduce((sum, s) => sum + s.amount, 0);
+  const totalRevenue = subscriptions.reduce((sum, subscription) => sum + subscription.amount, 0);
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Subscription Management</h1>
@@ -202,8 +192,7 @@ export default function AdminSubscriptions() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="glass-card p-6 rounded-2xl relative overflow-hidden group border border-white/60 bg-white/50 shadow-sm">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity bg-blue-500 text-blue-500">
             <CreditCard className="w-24 h-24" />
@@ -250,14 +239,13 @@ export default function AdminSubscriptions() {
           </div>
           <div className="relative z-10">
             <p className="text-slate-500 text-sm font-medium">Monthly Revenue</p>
-            <h3 className="text-3xl font-bold text-purple-600 mt-1">₹{totalRevenue.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold text-purple-600 mt-1">Rs. {totalRevenue.toLocaleString()}</h3>
           </div>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="glass-card p-4 rounded-xl flex gap-2 border border-white/60 bg-white/50 shadow-sm">
-        {['all', 'active', 'expired'].map(status => (
+        {['all', 'active', 'expired'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
@@ -271,7 +259,6 @@ export default function AdminSubscriptions() {
         ))}
       </div>
 
-      {/* Pending Requests */}
       <div className="mt-12">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Pending Subscription Requests</h2>
         <div className="glass-card rounded-xl overflow-hidden border border-white/60 bg-white/50 shadow-sm">
@@ -332,7 +319,6 @@ export default function AdminSubscriptions() {
         </div>
       </div>
 
-      {/* Subscriptions Table */}
       <div className="glass-card rounded-xl overflow-hidden border border-white/60 bg-white/50 shadow-sm">
         <div className="overflow-x-auto">
           {loading ? (
@@ -357,46 +343,46 @@ export default function AdminSubscriptions() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredSubscriptions.map((sub) => (
-                  <tr key={sub.id} className="group hover:bg-slate-50/80 transition-colors">
+                {filteredSubscriptions.map((subscription) => (
+                  <tr key={subscription.id} className="group hover:bg-slate-50/80 transition-colors">
                     <td className="p-6">
                       <div>
-                        <p className="font-bold text-slate-800">{sub.ownerName}</p>
-                        <p className="text-xs text-slate-500">{sub.ownerEmail}</p>
+                        <p className="font-bold text-slate-800">{subscription.ownerName}</p>
+                        <p className="text-xs text-slate-500">{subscription.ownerEmail}</p>
                       </div>
                     </td>
                     <td className="p-6">
-                      <span className={getPlanBadge(sub.planType)}>{sub.planType}</span>
+                      <span className={getPlanBadge(subscription.planType)}>{subscription.planType}</span>
                     </td>
                     <td className="p-6">
-                      <p className="font-medium text-slate-700">₹{sub.amount.toLocaleString()}</p>
+                      <p className="font-medium text-slate-700">Rs. {subscription.amount.toLocaleString()}</p>
                       <p className="text-xs text-slate-500">/month</p>
                     </td>
                     <td className="p-6">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${sub.status === 'active'
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${subscription.status === 'active'
                         ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                         : 'bg-red-50 text-red-600 border-red-200'
                         }`}>
-                        {sub.status === 'active' ? 'Active' : 'Expired'}
+                        {subscription.status === 'active' ? 'Active' : 'Expired'}
                       </span>
                     </td>
                     <td className="p-6 text-slate-500 text-sm">
-                      {sub.expiresAt ? formatDate(sub.expiresAt) : 'N/A'}
+                      {subscription.expiresAt ? formatDate(subscription.expiresAt) : 'N/A'}
                     </td>
                     <td className="p-6">
                       <div className="flex items-center gap-2">
-                        {sub.status === 'expired' && (
+                        {subscription.status === 'expired' && (
                           <button
-                            onClick={() => handleApproveSubscription(sub.ownerId, sub.planType)}
+                            onClick={() => handleApproveSubscription(subscription.ownerId, subscription.planType)}
                             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                             title="Renew"
                           >
                             <RotateCcw className="w-4 h-4" />
                           </button>
                         )}
-                        {sub.status === 'active' && (
+                        {subscription.status === 'active' && (
                           <button
-                            onClick={() => handleDeactivateSubscription(sub.ownerId)}
+                            onClick={() => handleDeactivateSubscription(subscription.ownerId)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Deactivate"
                           >
@@ -413,7 +399,6 @@ export default function AdminSubscriptions() {
         </div>
       </div>
 
-      {/* Owners Without Subscription */}
       <div className="mt-12">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Owners Without Subscription</h2>
         <div className="glass-card rounded-xl overflow-hidden border border-white/60 bg-white/50 shadow-sm">
@@ -427,7 +412,7 @@ export default function AdminSubscriptions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {owners.filter(o => !o.subscriptionType).slice(0, 10).map((owner) => (
+              {owners.filter((owner) => !owner.subscriptionType).slice(0, 10).map((owner) => (
                 <tr key={owner.id} className="hover:bg-slate-50/80 transition-colors">
                   <td className="p-6">
                     <div>
@@ -456,9 +441,9 @@ export default function AdminSubscriptions() {
                       aria-label="Assign Subscription"
                     >
                       <option value="" disabled>Select Plan...</option>
-                      <option value="basic">Basic (₹999)</option>
-                      <option value="standard">Standard (₹2499)</option>
-                      <option value="premium">Premium (₹4999)</option>
+                      <option value="basic">Basic (Rs. 999)</option>
+                      <option value="standard">Standard (Rs. 2499)</option>
+                      <option value="premium">Premium (Rs. 4999)</option>
                     </select>
                   </td>
                 </tr>
@@ -467,7 +452,6 @@ export default function AdminSubscriptions() {
           </table>
         </div>
       </div>
-
     </div>
   );
 }

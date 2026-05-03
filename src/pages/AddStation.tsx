@@ -1,8 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Clock, PlusCircle, CheckCircle, Navigation, Info, Loader, Fuel, Coffee, Car, BatteryCharging, DollarSign } from 'lucide-react';
-
-const API_URL = '/api';
+import { API_BASE_URL } from '../services/api';
 
 // Convert DMS (Degrees Minutes Seconds) to Decimal Degrees
 function dmsToDecimal(dmsString: string): { lat: number; lng: number } | null {
@@ -59,6 +58,7 @@ function normalizeCoordinatesInput(value: string): { normalized: string; lat: st
 }
 
 export default function AddStation() {
+  const location = useLocation();
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -77,6 +77,7 @@ export default function AddStation() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const isOwnerArea = location.pathname.startsWith('/owner/');
 
   const amenityOptions = [
     { id: 'Restroom', icon: Coffee },
@@ -135,31 +136,47 @@ export default function AddStation() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('ownerToken');
+      const token = localStorage.getItem(isOwnerArea ? 'ownerToken' : 'adminToken');
       if (!token) {
         navigate('/login');
         return;
       }
 
-      const response = await fetch(`${API_URL}/owner/stations`, {
+      const response = await fetch(`${API_BASE_URL}${isOwnerArea ? '/owner/stations' : '/admin/stations'}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name: formData.name,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          postalCode: formData.postalCode,
-          phone: formData.phone,
-          lat: formData.lat ? parseFloat(formData.lat) : null,
-          lng: formData.lng ? parseFloat(formData.lng) : null,
-          fuelTypes: formData.fuelTypes,
-          openingHours: formData.openingHours,
-          amenities: formData.amenities,
-        }),
+        body: JSON.stringify(
+          isOwnerArea
+            ? {
+              name: formData.name,
+              address: formData.address,
+              city: formData.city,
+              state: formData.state,
+              postalCode: formData.postalCode,
+              phone: formData.phone,
+              lat: formData.lat ? parseFloat(formData.lat) : null,
+              lng: formData.lng ? parseFloat(formData.lng) : null,
+              fuelTypes: formData.fuelTypes,
+              openingHours: formData.openingHours,
+              amenities: formData.amenities,
+            }
+            : {
+              name: formData.name,
+              address: formData.address,
+              city: formData.city,
+              state: formData.state,
+              postalCode: formData.postalCode,
+              phone: formData.phone,
+              lat: formData.lat ? parseFloat(formData.lat) : 0,
+              lng: formData.lng ? parseFloat(formData.lng) : 0,
+              fuelTypes: formData.fuelTypes.join(', '),
+              openingHours: formData.openingHours,
+              amenities: formData.amenities.join(', '),
+            }
+        ),
       });
 
       const data = await response.json();
@@ -168,17 +185,18 @@ export default function AddStation() {
         throw new Error(data.error || 'Failed to add station');
       }
 
-      setSuccess('Station added successfully! It will be reviewed by admin.');
+      setSuccess(isOwnerArea ? 'Station added successfully! It will be reviewed by admin.' : 'Station added successfully.');
 
-      // Update owner data in localStorage with new station
-      const ownerData = localStorage.getItem('ownerUser');
-      if (ownerData) {
-        const owner = JSON.parse(ownerData);
-        owner.stations = [...(owner.stations || []), data.station];
-        localStorage.setItem('ownerUser', JSON.stringify(owner));
+      if (isOwnerArea) {
+        const ownerData = localStorage.getItem('ownerUser');
+        if (ownerData) {
+          const owner = JSON.parse(ownerData);
+          owner.stations = [...(owner.stations || []), data.station];
+          localStorage.setItem('ownerUser', JSON.stringify(owner));
+        }
       }
 
-      setTimeout(() => navigate('/owner/dashboard'), 2000);
+      setTimeout(() => navigate(isOwnerArea ? '/owner/dashboard' : '/stations'), 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to add station. Please try again.');
     } finally {

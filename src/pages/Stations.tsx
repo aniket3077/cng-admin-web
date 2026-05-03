@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, MapPin, Phone, CheckCircle, XCircle, AlertTriangle, Eye, Loader, Trash2 } from 'lucide-react';
 import { adminApi, Station } from '../services/api';
 
 export default function Stations() {
+  const [searchParams] = useSearchParams();
+  const statusQuery = searchParams.get('status') || '';
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(statusQuery);
   const [cngFilter, setCngFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -18,31 +21,21 @@ export default function Stations() {
     fetchStations();
   }, [currentPage, statusFilter, cngFilter]);
 
+  useEffect(() => {
+    setStatusFilter(statusQuery);
+    setCurrentPage(1);
+  }, [statusQuery]);
+
   const fetchStations = async () => {
     try {
       setLoading(true);
-      // cngFilter is passed as boolean string, api might expect slightly different logic so passing as verify param?
-      // Actually standard getStations in api.ts takes (page, search, verified, approvalStatus).
-      // verified param usually maps to "isVerified". 
-      // The current UI filters by "Status" (approvalStatus) and "CNG Availability" (cngAvailable - not in getStations args directly?)
-      // Let's look at api.ts getStations: params: { page, search, verified, approvalStatus }
-      // It seems cngAvailable filtering might need to be added to api.ts or passed in a custom way. 
-      // For now, I will pass cngAvailable as a custom query param through the 'search' or modifying api.ts?
-      // Wait, I can't modify api.ts easily without potentially breaking other things.
-      // But getStations puts extra args into params? No, it constructs params explicitly.
-      // Let's stick to using getStations as defined and maybe accept that cngFilter might not work server side yet unless I update api.ts too.
-      // OR better, I'll update api.ts to accept extra filters if needed, BUT for now let's just use what's there.
-      // Actually, looking at the previous raw fetch: `url += &cngAvailable=${cngFilter}`.
-      // So the backend supports it.
-      // I should update adminApi.getStations to accept generic filters or just use the raw axios call here for the specialized filter?
-      // No, let's use adminApi but maybe we need to extend it?
-      // Actually, for delete issue, the priority is delete.
-
-      // I'll call adminApi.getStations but I might lose cngFilter if I don't handle it.
-      // Let's optimistically assume I can pass it or I will rely on search string?
-      // Let's stick to the visible standard args for now to ensure type safety.
-
-      const response = await adminApi.getStations(currentPage, searchTerm, undefined, statusFilter || undefined);
+      const response = await adminApi.getStations(
+        currentPage,
+        searchTerm,
+        undefined,
+        statusFilter || undefined,
+        cngFilter === '' ? undefined : cngFilter === 'true'
+      );
 
       setStations(response.stations);
       setTotalPages(response.totalPages);
@@ -122,6 +115,23 @@ export default function Stations() {
     return `px-3 py-1 rounded-full text-xs font-medium border ${styles[s] || 'bg-slate-100 text-slate-600'}`;
   };
 
+  const isCngAvailable = (station: Station) => {
+    if (station.cngAvailable !== undefined) {
+      return station.cngAvailable;
+    }
+
+    try {
+      const parsed = JSON.parse(station.fuelTypes);
+      if (Array.isArray(parsed)) {
+        return parsed.includes('CNG');
+      }
+    } catch {
+      // Fall through to plain string parsing.
+    }
+
+    return station.fuelTypes?.toUpperCase().includes('CNG') || false;
+  };
+
   // Helper for cng updated time
   const formatCngUpdated = (dateString: string | undefined) => {
     if (!dateString) return 'Never';
@@ -148,16 +158,16 @@ export default function Stations() {
       <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input
-            id="stationSearch"
-            name="stationSearch"
-            type="text"
-            placeholder="Search stations by name, city..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            className="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2.5 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-primary-500/50"
-          />
+            <input
+              id="stationSearch"
+              name="stationSearch"
+              type="text"
+              placeholder="Search stations by name, city..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="w-full bg-slate-50 border-none rounded-lg pl-10 pr-4 py-2.5 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-primary-500/50"
+            />
         </div>
 
         <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
@@ -242,35 +252,13 @@ export default function Stations() {
                       <p className="text-xs text-slate-400">{station.state}</p>
                     </td>
                     <td className="p-6">
-                      {/* Need a generic field for cng status? api Station type has fuelTypes but maybe not cngAvailable bool? 
-                          Let's assume the api Station interface has it or we use fuelTypes logic but previous code used cngAvailable.
-                          The api.ts Station interface:
-                              id, name, address...
-                              lat, lng...
-                              fuelTypes: string
-                              ... NO cngAvailable boolean there?
-                          Wait, let me double check api.ts Station interface content from previous read.
-                          Yes, lines 37-70: `fuelTypes: string;` ... but NO `cngAvailable`.
-                          However, typical API responses might return it. 
-                          If I am switching to the imported type, I might lose access to `cngAvailable` if it's not in the type def.
-                          BUT... standard JS/TS allows access if I cast or if the type is loose.
-                          The imported Station interface is explicit. 
-                          If I want to access `cngAvailable`, I should add it to the interface in api.ts OR just cast it here.
-                          OR check fuelTypes.
-                          Usually `fuelTypes.includes('CNG')` is the check.
-                          But previous code used `station.cngAvailable`.
-                          I'll assume `(station as any).cngAvailable` is present or try to infer it. 
-                          Actually, I'll update the render logic to be safe: 
-                          `const isCngAvailable = (station as any).cngAvailable ?? station.fuelTypes?.includes('CNG');`
-                      */}
                       <div className="flex flex-col gap-1">
-                        <div className={`flex items-center gap-2 text-sm font-medium ${(station as any).cngAvailable ? 'text-emerald-600' : 'text-red-500'}`}>
-                          <div className={`w-2 h-2 rounded-full ${(station as any).cngAvailable ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                          {(station as any).cngAvailable ? 'Available' : 'Unavailable'}
+                        <div className={`flex items-center gap-2 text-sm font-medium ${isCngAvailable(station) ? 'text-emerald-600' : 'text-red-500'}`}>
+                          <div className={`w-2 h-2 rounded-full ${isCngAvailable(station) ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                          {isCngAvailable(station) ? 'Available' : 'Unavailable'}
                         </div>
                         <div className="text-xs text-slate-500">
-                          {/* Same for cngUpdatedAt */}
-                          Updated: {formatCngUpdated((station as any).cngUpdatedAt)}
+                          Updated: {formatCngUpdated(station.cngUpdatedAt)}
                         </div>
                       </div>
                     </td>
@@ -395,8 +383,8 @@ export default function Stations() {
                 </h3>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 text-sm">CNG Availability</span>
-                  <span className={`font-medium ${(selectedStation as any).cngAvailable ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {(selectedStation as any).cngAvailable ? 'Online' : 'Offline'}
+                  <span className={`font-medium ${isCngAvailable(selectedStation) ? 'text-emerald-600' : 'text-red-500'}`}>
+                    {isCngAvailable(selectedStation) ? 'Online' : 'Offline'}
                   </span>
                 </div>
               </div>

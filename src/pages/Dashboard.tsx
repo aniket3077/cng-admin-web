@@ -140,7 +140,7 @@ export default function Dashboard() {
           value={stats.openTickets.toLocaleString()}
           icon={MessageSquare}
           color="bg-emerald-500 text-emerald-500"
-          onClick={() => navigate('/support')}
+          onClick={() => navigate('/support?status=open')}
         />
       </div>
 
@@ -191,7 +191,7 @@ export default function Dashboard() {
         <div className="glass-card p-6 rounded-2xl border border-white/60 bg-white/50 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-slate-800">Recent Support Tickets</h3>
-            <button onClick={() => navigate('/support')} className="text-sm text-primary-600 font-medium hover:text-primary-700">View All</button>
+            <button onClick={() => navigate('/support?status=open')} className="text-sm text-primary-600 font-medium hover:text-primary-700">View All</button>
           </div>
 
           <div className="space-y-4 flex-1 overflow-auto">
