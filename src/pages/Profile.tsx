@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Building, MapPin, Edit2, Save, X, CheckCircle, BatteryCharging, TrendingUp, AlertCircle, Loader } from 'lucide-react';
-
-const API_URL = '/api';
+import { API_BASE_URL } from '../services/api';
 
 async function parseJsonSafe(response: Response): Promise<any | null> {
   const raw = await response.text();
@@ -43,7 +42,7 @@ export default function Profile() {
         return;
       }
 
-      const response = await fetch(`${API_URL}/owner/profile`, {
+      const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -122,7 +121,7 @@ export default function Profile() {
         state: formData.state,
       };
 
-      const response = await fetch(`${API_URL}/owner/profile`, {
+      const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -161,7 +160,7 @@ export default function Profile() {
     try {
       const token = localStorage.getItem('ownerToken');
 
-      const response = await fetch(`${API_URL}/owner/cng-status`, {
+      const response = await fetch(`${API_BASE_URL}/owner/cng-status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

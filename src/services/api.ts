@@ -1,9 +1,41 @@
 import axios from 'axios';
 
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
-export const API_BASE_URL = configuredApiUrl && configuredApiUrl.length > 0
-  ? configuredApiUrl.replace(/\/$/, '')
-  : '/api';
+function normalizeApiBaseUrl(rawUrl?: string) {
+  const configuredApiUrl = rawUrl?.trim();
+  if (!configuredApiUrl) {
+    return '/api';
+  }
+
+  const trimmedUrl = configuredApiUrl.replace(/\/+$/, '');
+  if (trimmedUrl === '/api' || trimmedUrl.endsWith('/api')) {
+    return trimmedUrl;
+  }
+
+  // Production has previously been configured with the backend origin only.
+  // All app endpoints live under /api, so normalize the base URL defensively.
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    try {
+      const url = new URL(trimmedUrl);
+      const basePath = url.pathname && url.pathname !== '/' ? url.pathname.replace(/\/+$/, '') : '';
+      url.pathname = `${basePath}/api`;
+      return url.toString().replace(/\/$/, '');
+    } catch {
+      return `${trimmedUrl}/api`;
+    }
+  }
+
+  return `${trimmedUrl}/api`;
+}
+
+function unwrapApiData<T>(payload: T | { data: T }) {
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    return payload.data;
+  }
+
+  return payload as T;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -279,18 +311,18 @@ export const adminApi = {
   // Support Ticket Management
   getTickets: async (page = 1, filters?: { status?: string; category?: string; priority?: string; search?: string }) => {
     const params: any = { page, ...filters };
-    const response = await api.get<TicketsResponse>('/admin/support', { params });
-    return response.data;
+    const response = await api.get<TicketsResponse | { data: TicketsResponse }>('/admin/support', { params });
+    return unwrapApiData<TicketsResponse>(response.data);
   },
 
   updateTicket: async (id: string, data: { status?: string; assignedTo?: string; resolution?: string; priority?: string }) => {
     const response = await api.put(`/admin/support?id=${id}`, data);
-    return response.data;
+    return unwrapApiData(response.data);
   },
 
   addTicketReply: async (ticketId: string, message: string, isInternal: boolean = false) => {
     const response = await api.post('/admin/support', { ticketId, message, isInternal });
-    return response.data;
+    return unwrapApiData(response.data);
   },
 
   geocode: async (address: string) => {

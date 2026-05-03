@@ -15,6 +15,7 @@ import {
   X,
   Loader,
 } from 'lucide-react';
+import { API_BASE_URL } from '../services/api';
 
 interface Station {
   id: string;
@@ -57,8 +58,6 @@ export default function OwnerDashboard() {
   const [updatingCng, setUpdatingCng] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const API_URL = '/api';
-
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem('ownerToken');
@@ -67,7 +66,7 @@ export default function OwnerDashboard() {
         return;
       }
 
-      const response = await fetch(`${API_URL}/owner/profile`, {
+      const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +117,7 @@ export default function OwnerDashboard() {
     try {
       const token = localStorage.getItem('ownerToken');
 
-      const response = await fetch(`${API_URL}/owner/cng-status`, {
+      const response = await fetch(`${API_BASE_URL}/owner/cng-status`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
