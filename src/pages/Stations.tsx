@@ -226,6 +226,7 @@ export default function Stations() {
                   <th className="p-6">Station Info</th>
                   <th className="p-6">Location</th>
                   <th className="p-6">CNG Status</th>
+                  <th className="p-6">Crowd Level</th>
                   <th className="p-6">Approval</th>
                   <th className="p-6 text-center">Actions</th>
                 </tr>
@@ -260,6 +261,33 @@ export default function Stations() {
                         <div className="text-xs text-slate-500">
                           Updated: {formatCngUpdated(station.cngUpdatedAt)}
                         </div>
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <div className="flex flex-col gap-1">
+                        {station.crowdLevel ? (
+                          <>
+                            <div className={`flex items-center gap-2 text-sm font-medium ${
+                              station.crowdLevel === 'low' ? 'text-emerald-600' :
+                              station.crowdLevel === 'high' ? 'text-red-600' :
+                              'text-amber-600'
+                            }`}>
+                              <div className={`w-2 h-2 rounded-full ${
+                                station.crowdLevel === 'low' ? 'bg-emerald-500' :
+                                station.crowdLevel === 'high' ? 'bg-red-500' :
+                                'bg-amber-500'
+                              }`} />
+                              {station.crowdLevel.charAt(0).toUpperCase() + station.crowdLevel.slice(1)}
+                            </div>
+                            {station.estimatedWaitTime !== undefined && (
+                              <div className="text-xs text-slate-500">
+                                Wait: ~{station.estimatedWaitTime} min
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-sm text-slate-400">No data</span>
+                        )}
                       </div>
                     </td>
                     <td className="p-6">
@@ -381,11 +409,42 @@ export default function Stations() {
                   <AlertTriangle className="w-4 h-4 text-amber-500" />
                   Operational Status
                 </h3>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 text-sm">CNG Availability</span>
-                  <span className={`font-medium ${isCngAvailable(selectedStation) ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {isCngAvailable(selectedStation) ? 'Online' : 'Offline'}
-                  </span>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-sm">CNG Availability</span>
+                    <span className={`font-medium ${isCngAvailable(selectedStation) ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {isCngAvailable(selectedStation) ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
+                  {selectedStation.crowdLevel && (
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                      <span className="text-slate-500 text-sm">Crowd Level</span>
+                      <div className={`flex items-center gap-2 font-medium ${
+                        selectedStation.crowdLevel === 'low' ? 'text-emerald-600' :
+                        selectedStation.crowdLevel === 'high' ? 'text-red-600' :
+                        'text-amber-600'
+                      }`}>
+                        <div className={`w-2 h-2 rounded-full ${
+                          selectedStation.crowdLevel === 'low' ? 'bg-emerald-500' :
+                          selectedStation.crowdLevel === 'high' ? 'bg-red-500' :
+                          'bg-amber-500'
+                        }`} />
+                        {selectedStation.crowdLevel.charAt(0).toUpperCase() + selectedStation.crowdLevel.slice(1)}
+                      </div>
+                    </div>
+                  )}
+                  {selectedStation.crowdCount !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 text-sm">Current Wait</span>
+                      <span className="font-medium text-slate-700">{selectedStation.crowdCount} vehicles waiting</span>
+                    </div>
+                  )}
+                  {selectedStation.estimatedWaitTime !== undefined && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 text-sm">Est. Wait Time</span>
+                      <span className="font-medium text-slate-700">~{selectedStation.estimatedWaitTime} minutes</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

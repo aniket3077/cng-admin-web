@@ -88,6 +88,10 @@ export interface Station {
   cngAvailable?: boolean;
   cngQuantityKg?: number;
   cngUpdatedAt?: string;
+  crowdLevel?: 'low' | 'medium' | 'high';
+  crowdCount?: number;
+  estimatedWaitTime?: number;
+  crowdUpdatedAt?: string;
   approvalStatus?: string;
   rejectionReason?: string;
   ownerId?: string;
