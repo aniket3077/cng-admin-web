@@ -4,6 +4,8 @@ import { ArrowLeft, ShieldCheck, Send, Loader, Mail } from 'lucide-react';
 
 import { API_BASE_URL } from '../services/api';
 
+const PASSWORD_RESET_STORAGE_KEY = 'passwordResetSession';
+
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -19,6 +21,12 @@ export default function ForgotPassword() {
     setMessage('');
 
     try {
+      const normalizedEmail = email.toLowerCase().trim();
+      const storedSession = sessionStorage.getItem(PASSWORD_RESET_STORAGE_KEY);
+      const parsedSession = storedSession ? JSON.parse(storedSession) as {
+        email?: string;
+        sessionToken?: string;
+      } : null;
       const endpoint = accountType === 'admin' 
         ? `${API_BASE_URL}/auth/reset-password`
         : `${API_BASE_URL}/auth/reset-password`;
@@ -30,7 +38,8 @@ export default function ForgotPassword() {
         },
         body: JSON.stringify({ 
           action: 'send',
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
+          sessionToken: parsedSession?.email === normalizedEmail ? parsedSession.sessionToken : undefined,
         }),
       });
 
@@ -40,6 +49,10 @@ export default function ForgotPassword() {
         throw new Error(data.error || data.message || 'Failed to send reset code');
       }
 
+      sessionStorage.setItem(PASSWORD_RESET_STORAGE_KEY, JSON.stringify({
+        email: normalizedEmail,
+        sessionToken: data.sessionToken,
+      }));
       setMessage('Password reset code has been sent to your email. Please check your inbox.');
               setTimeout(() => {
                 navigate(`/reset-password?email=${encodeURIComponent(email)}`);

@@ -4,6 +4,8 @@ import { ArrowLeft, Lock, CheckCircle, Loader } from 'lucide-react';
 
 import { API_BASE_URL } from '../services/api';
 
+const PASSWORD_RESET_STORAGE_KEY = 'passwordResetSession';
+
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -16,6 +18,7 @@ export default function ResetPassword() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isVerified, setIsVerified] = useState(false);
+  const [resetToken, setResetToken] = useState('');
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length <= 1) {
@@ -57,6 +60,12 @@ export default function ResetPassword() {
     }
 
     try {
+      const normalizedEmail = email.toLowerCase().trim();
+      const storedSession = sessionStorage.getItem(PASSWORD_RESET_STORAGE_KEY);
+      const parsedSession = storedSession ? JSON.parse(storedSession) as {
+        email?: string;
+        sessionToken?: string;
+      } : null;
       const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
         method: 'POST',
         headers: {
@@ -64,18 +73,26 @@ export default function ResetPassword() {
         },
         body: JSON.stringify({ 
           action: 'verify',
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           otp: otpString,
+          sessionToken: parsedSession?.email === normalizedEmail ? parsedSession.sessionToken : undefined,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.sessionToken) {
+          sessionStorage.setItem(PASSWORD_RESET_STORAGE_KEY, JSON.stringify({
+            email: normalizedEmail,
+            sessionToken: data.sessionToken,
+          }));
+        }
         throw new Error(data.error || data.message || 'Failed to verify OTP');
       }
 
       setIsVerified(true);
+      setResetToken(data.resetToken || '');
       setMessage('OTP verified successfully! Please set your new password.');
     } catch (error: any) {
       setError(error.message || 'Failed to verify OTP. Please try again.');
@@ -102,7 +119,11 @@ export default function ResetPassword() {
       return;
     }
 
-    const otpString = otp.join('');
+    if (!resetToken) {
+      setError('Reset session expired. Please verify OTP again.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
@@ -113,7 +134,7 @@ export default function ResetPassword() {
         body: JSON.stringify({ 
           action: 'reset',
           email: email.toLowerCase().trim(),
-          otp: otpString,
+          resetToken,
           newPassword: newPassword,
         }),
       });
@@ -124,6 +145,7 @@ export default function ResetPassword() {
         throw new Error(data.error || data.message || 'Failed to reset password');
       }
 
+      sessionStorage.removeItem(PASSWORD_RESET_STORAGE_KEY);
       setMessage('Password reset successfully! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');

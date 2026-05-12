@@ -42,7 +42,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
     setError('');
 
     try {
-      const path = isAdminMode ? '/auth/admin/login' : '/auth/subscriber/login';
+      const path = isAdminMode ? '/auth/admin/login' : '/auth/owner/login';
       const endpoints = Array.from(new Set([
         `${API_BASE_URL}${path}`,
         `/api${path}`,

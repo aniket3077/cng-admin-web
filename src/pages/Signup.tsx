@@ -103,7 +103,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/subscriber/signup`, {
+      const response = await fetch(`${API_BASE_URL}/auth/owner/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
