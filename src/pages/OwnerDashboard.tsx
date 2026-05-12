@@ -15,7 +15,7 @@ import {
   X,
   Loader,
 } from 'lucide-react';
-import { API_BASE_URL } from '../services/api';
+import { API_BASE_URL, ownerApi } from '../services/api';
 
 interface Station {
   id: string;
@@ -58,7 +58,7 @@ export default function OwnerDashboard() {
   const [updatingCng, setUpdatingCng] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const fetchProfile = async () => {
+  const fetchProfileAndStations = async () => {
     try {
       const token = localStorage.getItem('ownerToken');
       if (!token) {
@@ -66,6 +66,7 @@ export default function OwnerDashboard() {
         return;
       }
 
+      // Fetch profile
       const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -74,21 +75,23 @@ export default function OwnerDashboard() {
 
       if (response.ok) {
         const data = await parseJsonSafe(response);
-        if (!data?.owner) {
-          throw new Error('Invalid profile response from server');
-        }
+        if (!data?.owner) throw new Error('Invalid profile response');
 
-        setOwner(data.owner);
-        localStorage.setItem('ownerUser', JSON.stringify(data.owner));
+        // Fetch up-to-date stations for the owner
+        const stationsData = await ownerApi.getMyStations();
+        const updatedOwner = { ...data.owner, stations: stationsData.stations || [] };
+        
+        setOwner(updatedOwner);
+        localStorage.setItem('ownerUser', JSON.stringify(updatedOwner));
 
         const quantityMap: { [key: string]: number } = {};
-        data.owner.stations?.forEach((station: Station) => {
+        updatedOwner.stations.forEach((station: Station) => {
           quantityMap[station.id] = station.cngQuantityKg ?? 0;
         });
         setCngQuantity(quantityMap);
       }
     } catch (error) {
-      console.error('Fetch profile error:', error);
+      console.error('Fetch error:', error);
     }
   };
 
@@ -108,31 +111,14 @@ export default function OwnerDashboard() {
     });
     setCngQuantity(quantityMap);
 
-    fetchProfile();
+    fetchProfileAndStations();
   }, [navigate]);
 
   const handleQuantityUpdate = async (stationId: string, quantity: number) => {
     setUpdatingCng(stationId);
 
     try {
-      const token = localStorage.getItem('ownerToken');
-
-      const response = await fetch(`${API_BASE_URL}/owner/cng-status`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          stationId,
-          cngQuantityKg: quantity,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await parseJsonSafe(response);
-        throw new Error(errorData?.message || errorData?.error || 'Failed to update CNG quantity');
-      }
+      await ownerApi.updateCngStatus(stationId, quantity);
 
       const newAvailable = quantity > 0;
       setCngQuantity(prev => ({
@@ -161,7 +147,7 @@ export default function OwnerDashboard() {
       setTempQuantity('');
     } catch (error: any) {
       console.error('CNG quantity update error:', error);
-      alert(error?.message || 'Failed to update CNG quantity');
+      alert(error?.response?.data?.error || error?.message || 'Failed to update CNG quantity');
     } finally {
       setUpdatingCng(null);
     }

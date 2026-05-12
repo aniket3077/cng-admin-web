@@ -8,6 +8,7 @@ import StationOwners from './pages/StationOwners';
 import Stations from './pages/Stations';
 import AdminSubscriptions from './pages/AdminSubscriptions';
 import OwnerDashboard from './pages/OwnerDashboard';
+import OwnerStations from './pages/OwnerStations';
 import AddStation from './pages/AddStation';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
@@ -121,6 +122,7 @@ function App() {
               </PrivateRoute>
             }
           />
+
           <Route
             path="/support"
             element={
@@ -139,6 +141,16 @@ function App() {
               <OwnerRoute>
                 <Layout>
                   <OwnerDashboard />
+                </Layout>
+              </OwnerRoute>
+            }
+          />
+          <Route
+            path="/owner/stations"
+            element={
+              <OwnerRoute>
+                <Layout>
+                  <OwnerStations />
                 </Layout>
               </OwnerRoute>
             }

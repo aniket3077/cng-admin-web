@@ -64,6 +64,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
         {isOwnerRoute ? (
           <>
             <NavItem to="/owner/dashboard" icon={LayoutDashboard} label="Dashboard" />
+            <NavItem to="/owner/stations" icon={MapPin} label="My Stations" />
             <NavItem to="/owner/add-station" icon={PlusCircle} label="Add Station" />
             <NavItem to="/owner/profile" icon={User} label="Profile" />
           </>

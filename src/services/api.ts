@@ -331,7 +331,7 @@ export const adminApi = {
     return unwrapApiData(response.data);
   },
 
-  geocode: async (address: string) => {
+    geocode: async (address: string) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       throw new Error('Google Maps API key is not configured');
@@ -343,4 +343,36 @@ export const adminApi = {
   },
 };
 
+// Owner-scoped API — uses ownerToken, filtered to logged-in owner only
+export const ownerApi = {
+  getMyStations: async () => {
+    const token = localStorage.getItem('ownerToken');
+    const response = await api.get('/owner/stations', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data as { stations: Station[] };
+  },
+
+  updateCngStatus: async (stationId: string, cngQuantityKg: number) => {
+    const token = localStorage.getItem('ownerToken');
+    const response = await api.put(
+      '/owner/cng-status',
+      { stationId, cngQuantityKg },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  },
+
+  updateCrowdStatus: async (stationId: string, crowdLevel: 'low' | 'medium' | 'high') => {
+    const token = localStorage.getItem('ownerToken');
+    const response = await api.put(
+      '/owner/crowd-status',
+      { stationId, crowdLevel },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  },
+};
+
 export default api;
+
