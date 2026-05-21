@@ -36,21 +36,15 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem('ownerToken');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
+      // SECURITY FIX: use cookie-based auth for owner profile requests.
       const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('ownerToken');
           localStorage.removeItem('ownerUser');
           navigate('/login');
           return;
@@ -109,8 +103,6 @@ export default function Profile() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem('ownerToken');
-
       // Prepare data with coordinates as numbers
       const updateData = {
         name: formData.name,
@@ -124,9 +116,9 @@ export default function Profile() {
       const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(updateData),
       });
 
@@ -158,14 +150,12 @@ export default function Profile() {
   const handleQuantityUpdate = async (stationId: string, quantity: number) => {
     setUpdatingCng(stationId);
     try {
-      const token = localStorage.getItem('ownerToken');
-
       const response = await fetch(`${API_BASE_URL}/owner/cng-status`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           stationId,
           cngQuantityKg: quantity,

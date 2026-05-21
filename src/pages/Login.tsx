@@ -30,10 +30,31 @@ export default function Login({ mode = 'owner' }: LoginProps) {
   const isAdminMode = mode === 'admin';
 
   useEffect(() => {
-    const existingToken = localStorage.getItem(isAdminMode ? 'adminToken' : 'ownerToken');
-    if (existingToken) {
-      navigate(isAdminMode ? '/dashboard' : '/owner/dashboard', { replace: true });
-    }
+    let cancelled = false;
+
+    const verifySession = async () => {
+      try {
+        // SECURITY FIX: use the HttpOnly cookie-backed verify endpoint instead of localStorage tokens.
+        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          credentials: 'include',
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!cancelled && response.ok && data?.valid) {
+          if ((isAdminMode && data.role === 'admin') || (!isAdminMode && data.role === 'owner')) {
+            navigate(isAdminMode ? '/dashboard' : '/owner/dashboard', { replace: true });
+          }
+        }
+      } catch {
+        // Ignore verification errors and show the login form.
+      }
+    };
+
+    void verifySession();
+
+    return () => {
+      cancelled = true;
+    };
   }, [isAdminMode, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -42,7 +63,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
     setError('');
 
     try {
-      const path = isAdminMode ? '/auth/admin/login' : '/auth/owner/login';
+          const path = isAdminMode ? '/auth/admin/login' : '/auth/owner/login';
       const endpoints = Array.from(new Set([
         `${API_BASE_URL}${path}`,
         `/api${path}`,
@@ -59,6 +80,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({ email, password }),
           });
 
@@ -93,15 +115,11 @@ export default function Login({ mode = 'owner' }: LoginProps) {
       }
 
       if (isAdminMode) {
-        localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminUser', JSON.stringify(data.admin));
-        localStorage.removeItem('ownerToken');
         localStorage.removeItem('ownerUser');
         navigate('/dashboard');
       } else {
-        localStorage.setItem('ownerToken', data.token);
         localStorage.setItem('ownerUser', JSON.stringify(data.owner));
-        localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
         navigate('/owner/dashboard');
       }

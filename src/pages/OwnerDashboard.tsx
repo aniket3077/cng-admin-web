@@ -60,17 +60,12 @@ export default function OwnerDashboard() {
 
   const fetchProfileAndStations = async () => {
     try {
-      const token = localStorage.getItem('ownerToken');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
+      // SECURITY FIX: owner session is validated via HttpOnly cookies.
       // Fetch profile
       const response = await fetch(`${API_BASE_URL}/owner/profile`, {
         headers: {
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -111,7 +106,7 @@ export default function OwnerDashboard() {
     });
     setCngQuantity(quantityMap);
 
-    fetchProfileAndStations();
+    void fetchProfileAndStations();
   }, [navigate]);
 
   const handleQuantityUpdate = async (stationId: string, quantity: number) => {

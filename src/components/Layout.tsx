@@ -2,6 +2,7 @@ import { ReactNode, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import { API_BASE_URL } from '../services/api';
 
 interface LayoutProps {
     children: ReactNode;
@@ -15,12 +16,14 @@ export default function Layout({ children, showNewStationButton }: LayoutProps) 
     const isOwnerArea = location.pathname.startsWith('/owner/');
 
     const handleLogout = () => {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
-        localStorage.removeItem('ownerToken');
-        localStorage.removeItem('ownerUser');
-        localStorage.removeItem('userType');
-        navigate(isOwnerArea ? '/login' : '/admin/login');
+        // SECURITY FIX: logout is cookie-based, so clear the server session and redirect.
+        const logoutPath = isOwnerArea ? '/auth/logout' : '/admin/logout';
+        void fetch(`${API_BASE_URL}${logoutPath}`, {
+            method: 'POST',
+            credentials: 'include',
+        }).finally(() => {
+            navigate(isOwnerArea ? '/login' : '/admin/login');
+        });
     };
 
     return (

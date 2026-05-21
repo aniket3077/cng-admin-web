@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
+import { API_BASE_URL } from './services/api';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -23,170 +25,128 @@ import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('adminToken');
-  return token ? <>{children}</> : <Navigate to="/admin/login" replace />;
+type AuthRole = 'admin' | 'owner' | null;
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">
+      <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4 shadow-lg">
+        Checking session…
+      </div>
+    </div>
+  );
 }
 
-function OwnerRoute({ children }: { children: React.ReactNode }) {
-  const token = localStorage.getItem('ownerToken');
-  return token ? <>{children}</> : <Navigate to="/login" replace />;
+function AppRoutes() {
+  const location = useLocation();
+  const [authRole, setAuthRole] = useState<AuthRole>(null);
+  const [authStatus, setAuthStatus] = useState<'loading' | 'ready'>('loading');
+
+  const protectedRoute =
+    location.pathname.startsWith('/dashboard') ||
+    location.pathname.startsWith('/owners') ||
+    location.pathname.startsWith('/stations') ||
+    location.pathname.startsWith('/subscriptions') ||
+    location.pathname.startsWith('/users') ||
+    location.pathname.startsWith('/support') ||
+    location.pathname.startsWith('/owner/');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const verifySession = async () => {
+      if (!protectedRoute) {
+        setAuthRole(null);
+        setAuthStatus('ready');
+        return;
+      }
+
+      setAuthStatus('loading');
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          credentials: 'include',
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!cancelled && response.ok && data?.valid) {
+          setAuthRole(data.role ?? null);
+        } else if (!cancelled) {
+          setAuthRole(null);
+        }
+      } catch {
+        if (!cancelled) {
+          setAuthRole(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthStatus('ready');
+        }
+      }
+    };
+
+    void verifySession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname, protectedRoute]);
+
+  function PrivateRoute({ children }: { children: React.ReactNode }) {
+    if (authStatus === 'loading') {
+      return <LoadingScreen />;
+    }
+
+    return authRole === 'admin' ? <>{children}</> : <Navigate to="/admin/login" replace />;
+  }
+
+  function OwnerRoute({ children }: { children: React.ReactNode }) {
+    if (authStatus === 'loading') {
+      return <LoadingScreen />;
+    }
+
+    return authRole === 'owner' ? <>{children}</> : <Navigate to="/login" replace />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login mode="owner" />} />
+      <Route path="/admin/login" element={<Login mode="admin" />} />
+      <Route path="/signup" element={<Signup />} />
+
+      <Route path="/features" element={<Features />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<Terms />} />
+
+      <Route path="/dashboard" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
+      <Route path="/owners" element={<PrivateRoute><Layout><StationOwners /></Layout></PrivateRoute>} />
+      <Route path="/stations" element={<PrivateRoute><Layout showNewStationButton><Stations /></Layout></PrivateRoute>} />
+      <Route path="/stations/add" element={<PrivateRoute><Layout><AddStation /></Layout></PrivateRoute>} />
+      <Route path="/subscriptions" element={<PrivateRoute><Layout><AdminSubscriptions /></Layout></PrivateRoute>} />
+      <Route path="/users" element={<PrivateRoute><Layout><Users /></Layout></PrivateRoute>} />
+      <Route path="/support" element={<PrivateRoute><Layout><Support /></Layout></PrivateRoute>} />
+
+      <Route path="/owner/dashboard" element={<OwnerRoute><Layout><OwnerDashboard /></Layout></OwnerRoute>} />
+      <Route path="/owner/stations" element={<OwnerRoute><Layout><OwnerStations /></Layout></OwnerRoute>} />
+      <Route path="/owner/profile" element={<OwnerRoute><Layout><Profile /></Layout></OwnerRoute>} />
+      <Route path="/owner/add-station" element={<OwnerRoute><Layout><AddStation /></Layout></OwnerRoute>} />
+      <Route path="/owner/subscription" element={<OwnerRoute><Layout><Navigate to="/owner/dashboard" replace /></Layout></OwnerRoute>} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
 }
 
 function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login mode="owner" />} />
-          <Route path="/admin/login" element={<Login mode="admin" />} />
-          <Route path="/signup" element={<Signup />} />
-
-          {/* Public Pages */}
-          <Route path="/features" element={<Features />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<Terms />} />
-
-
-          {/* Admin Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <Dashboard />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/owners"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <StationOwners />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/stations"
-            element={
-              <PrivateRoute>
-                <Layout showNewStationButton>
-                  <Stations />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/stations/add"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  {/* Ideally AddStation but for admin? reusing owner's AddStation might not work if logic differs. 
-                      Checking routes, AddStation was under /owner/add-station.
-                      If there is no admin AddStation, I should probably not link it or create one.
-                      TopBar had a link to /stations/add. 
-                      Let's assume AddStation component can handle it or just point to it.
-                      Wait, AddStation in import is ./pages/AddStation.
-                  */}
-                  <AddStation />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/subscriptions"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AdminSubscriptions />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <Users />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/support"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <Support />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          {/* Owner Routes */}
-          <Route
-            path="/owner/dashboard"
-            element={
-              <OwnerRoute>
-                <Layout>
-                  <OwnerDashboard />
-                </Layout>
-              </OwnerRoute>
-            }
-          />
-          <Route
-            path="/owner/stations"
-            element={
-              <OwnerRoute>
-                <Layout>
-                  <OwnerStations />
-                </Layout>
-              </OwnerRoute>
-            }
-          />
-          <Route
-            path="/owner/profile"
-            element={
-              <OwnerRoute>
-                <Layout>
-                  <Profile />
-                </Layout>
-              </OwnerRoute>
-            }
-          />
-          <Route
-            path="/owner/add-station"
-            element={
-              <OwnerRoute>
-                <Layout>
-                  <AddStation />
-                </Layout>
-              </OwnerRoute>
-            }
-          />
-          <Route
-            path="/owner/subscription"
-            element={
-              <OwnerRoute>
-                <Layout>
-                  <Navigate to="/owner/dashboard" replace />
-                </Layout>
-              </OwnerRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </ErrorBoundary>
   );

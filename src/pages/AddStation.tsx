@@ -136,18 +136,13 @@ export default function AddStation() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem(isOwnerArea ? 'ownerToken' : 'adminToken');
-      if (!token) {
-        navigate(isOwnerArea ? '/login' : '/admin/login');
-        return;
-      }
-
+      // SECURITY FIX: rely on HttpOnly cookies; no bearer token should be read from localStorage.
       const response = await fetch(`${API_BASE_URL}${isOwnerArea ? '/owner/stations' : '/admin/stations'}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(
           isOwnerArea
             ? {

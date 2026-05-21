@@ -39,19 +39,11 @@ export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
 });
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const adminToken = localStorage.getItem('adminToken');
-  const ownerToken = localStorage.getItem('ownerToken');
-
-  if (adminToken) {
-    config.headers.Authorization = `Bearer ${adminToken}`;
-  } else if (ownerToken) {
-    config.headers.Authorization = `Bearer ${ownerToken}`;
-  }
-
   return config;
 });
 
@@ -60,12 +52,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const hadAdminSession = Boolean(localStorage.getItem('adminToken'));
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminUser');
-      localStorage.removeItem('ownerToken');
-      localStorage.removeItem('ownerUser');
-      window.location.href = hadAdminSession ? '/admin/login' : '/login';
+      window.location.href = window.location.pathname.startsWith('/owner/') ? '/login' : '/admin/login';
     }
     return Promise.reject(error);
   }
@@ -224,7 +211,7 @@ export interface TicketsResponse {
 
 export const adminApi = {
   login: async (email: string, password: string) => {
-    const response = await api.post<LoginResponse>('/admin/login', { email, password });
+    const response = await api.post<LoginResponse>('/auth/admin/login', { email, password });
     return response.data;
   },
 
@@ -232,7 +219,7 @@ export const adminApi = {
     try {
       await api.post('/admin/logout');
     } finally {
-      localStorage.removeItem('adminToken');
+      // SECURITY FIX: rely on cookie invalidation; the frontend no longer stores bearer tokens.
     }
   },
 
@@ -331,6 +318,7 @@ export const adminApi = {
     return unwrapApiData(response.data);
   },
 
+    // SECURITY FIX: this Google Maps key is exposed in the client bundle and must be referrer-restricted.
     geocode: async (address: string) => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
@@ -343,34 +331,35 @@ export const adminApi = {
   },
 };
 
-// Owner-scoped API — uses ownerToken, filtered to logged-in owner only
+// Owner-scoped API — cookie-authenticated and filtered to the logged-in owner
 export const ownerApi = {
   getMyStations: async () => {
-    const token = localStorage.getItem('ownerToken');
-    const response = await api.get('/owner/stations', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.get('/owner/stations');
     return response.data as { stations: Station[] };
   },
 
   updateCngStatus: async (stationId: string, cngQuantityKg: number) => {
-    const token = localStorage.getItem('ownerToken');
     const response = await api.put(
       '/owner/cng-status',
-      { stationId, cngQuantityKg },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { stationId, cngQuantityKg }
     );
     return response.data;
   },
 
   updateCrowdStatus: async (stationId: string, crowdLevel: 'low' | 'medium' | 'high') => {
-    const token = localStorage.getItem('ownerToken');
     const response = await api.put(
       '/owner/crowd-status',
-      { stationId, crowdLevel },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { stationId, crowdLevel }
     );
     return response.data;
+  },
+
+  logout: async () => {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      // SECURITY FIX: logout is cookie-based; do not manipulate bearer tokens in localStorage.
+    }
   },
 };
 
