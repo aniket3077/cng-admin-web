@@ -136,12 +136,18 @@ export default function AddStation() {
     setLoading(true);
 
     try {
-      // SECURITY FIX: rely on HttpOnly cookies; no bearer token should be read from localStorage.
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // SECURITY FIX: HttpOnly cookies with dynamic fallback to Bearer tokens in localStorage
       const response = await fetch(`${API_BASE_URL}${isOwnerArea ? '/owner/stations' : '/admin/stations'}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include',
         body: JSON.stringify(
           isOwnerArea

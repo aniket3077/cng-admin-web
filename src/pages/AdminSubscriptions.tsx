@@ -48,9 +48,14 @@ export default function AdminSubscriptions() {
     try {
       setLoading(true);
 
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/admin/owners?page=1&limit=100`, {
-        headers: {
-        },
+        headers,
         credentials: 'include',
       });
 
@@ -85,11 +90,17 @@ export default function AdminSubscriptions() {
   };
 
   const updateSubscription = async (ownerId: string, body: { subscriptionType: string | null; subscriptionEndsAt: string | null }) => {
+    const token = localStorage.getItem('authToken');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/admin/owners/${ownerId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       credentials: 'include',
       body: JSON.stringify(body),
     });
