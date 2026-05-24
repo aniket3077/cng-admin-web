@@ -58,8 +58,9 @@ export function initAntiInspect(): void {
   window.addEventListener(
     'keydown',
     (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-      const isMac = navigator.platform.toLowerCase().includes('mac');
+      const key = typeof event.key === 'string' ? event.key.toLowerCase() : '';
+      const platform = typeof navigator.platform === 'string' ? navigator.platform : '';
+      const isMac = platform.toLowerCase().includes('mac');
 
       const ctrlOrCmd = isMac ? event.metaKey : event.ctrlKey;
 
