@@ -54,38 +54,6 @@ export function initAntiInspect(): void {
     // ignore
   }
 
-  const blockEvent = (event: Event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  // Block right-click context menu.
-  window.addEventListener('contextmenu', blockEvent, { capture: true });
-
-  // Extra hardening: prevent right/middle click events that can sometimes still trigger menus/actions.
-  window.addEventListener(
-    'mousedown',
-    (event: MouseEvent) => {
-      if (event.button === 2 || event.button === 1) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    },
-    { capture: true },
-  );
-
-  window.addEventListener(
-    'auxclick',
-    (event: MouseEvent) => {
-      // Typically middle click; some environments use auxclick for non-left buttons.
-      if (event.button === 2 || event.button === 1) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    },
-    { capture: true },
-  );
-
   // Block common DevTools / view-source shortcuts.
   window.addEventListener(
     'keydown',
