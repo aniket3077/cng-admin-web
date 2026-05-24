@@ -42,14 +42,7 @@ export function initAntiInspect(): void {
       // ignore
     }
 
-    window.setInterval(() => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (console as any).clear?.();
-      } catch {
-        // ignore
-      }
-    }, 1000);
+
   } catch {
     // ignore
   }

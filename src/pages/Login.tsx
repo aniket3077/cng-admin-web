@@ -170,7 +170,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
 
           <form onSubmit={handleLogin} className="space-y-6" noValidate>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
+              <label htmlFor="loginEmail" className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
               <div className="relative group">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
                   <Mail className="w-5 h-5" />
@@ -180,6 +180,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
                   name="email"
                   type="email"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
@@ -190,7 +191,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-medium text-slate-600">Password</label>
+                <label htmlFor="loginPassword" className="text-sm font-medium text-slate-600">Password</label>
               </div>
               <div className="relative group">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
@@ -201,6 +202,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
                   name="password"
                   type="password"
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl py-3 pl-10 pr-4 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
