@@ -76,16 +76,4 @@ export function initAntiInspect(): void {
     { capture: true },
   );
 
-  // Basic DevTools-open detection (not foolproof). If detected, repeatedly hit `debugger`.
-  // This pauses execution when DevTools is open, discouraging inspection.
-  const threshold = 160;
-  window.setInterval(() => {
-    const widthDiff = Math.abs(window.outerWidth - window.innerWidth);
-    const heightDiff = Math.abs(window.outerHeight - window.innerHeight);
-    const devtoolsLikelyOpen = widthDiff > threshold || heightDiff > threshold;
-    if (devtoolsLikelyOpen) {
-      // eslint-disable-next-line no-debugger
-      debugger;
-    }
-  }, 1000);
 }
