@@ -183,7 +183,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
             <div className="space-y-2">
               <label htmlFor="loginEmail" className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
               <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors pointer-events-none">
                   <Mail className="w-5 h-5" />
                 </div>
                 <input
@@ -205,7 +205,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
                 <label htmlFor="loginPassword" className="text-sm font-medium text-slate-600">Password</label>
               </div>
               <div className="relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors pointer-events-none">
                   <Lock className="w-5 h-5" />
                 </div>
                 <input
