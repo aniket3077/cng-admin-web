@@ -42,8 +42,12 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Add token to requests
+// Add token to requests as a robust fallback in case cross-origin cookies are blocked by the browser
 api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -52,6 +56,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('ownerUser');
+      localStorage.removeItem('adminUser');
       window.location.href = window.location.pathname.startsWith('/owner/') ? '/login' : '/admin/login';
     }
     return Promise.reject(error);
@@ -219,7 +226,9 @@ export const adminApi = {
     try {
       await api.post('/admin/logout');
     } finally {
-      // SECURITY FIX: rely on cookie invalidation; the frontend no longer stores bearer tokens.
+      // SECURITY/ROBUSTNESS FIX: clear local authentication state and fallback Bearer token
+      localStorage.removeItem('adminUser');
+      localStorage.removeItem('authToken');
     }
   },
 
@@ -358,7 +367,9 @@ export const ownerApi = {
     try {
       await api.post('/auth/logout');
     } finally {
-      // SECURITY FIX: logout is cookie-based; do not manipulate bearer tokens in localStorage.
+      // SECURITY/ROBUSTNESS FIX: clear local authentication state and fallback Bearer token
+      localStorage.removeItem('ownerUser');
+      localStorage.removeItem('authToken');
     }
   },
 };

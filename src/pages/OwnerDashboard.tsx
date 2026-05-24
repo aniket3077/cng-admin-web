@@ -60,11 +60,16 @@ export default function OwnerDashboard() {
 
   const fetchProfileAndStations = async () => {
     try {
-      // SECURITY FIX: owner session is validated via HttpOnly cookies.
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // SECURITY FIX: owner session is validated via HttpOnly cookies with a fallback Bearer token.
       // Fetch profile
       const response = await fetch(`${API_BASE_URL}/owner/profile`, {
-        headers: {
-        },
+        headers,
         credentials: 'include',
       });
 

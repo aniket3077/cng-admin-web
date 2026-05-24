@@ -34,8 +34,15 @@ export default function Login({ mode = 'owner' }: LoginProps) {
 
     const verifySession = async () => {
       try {
-        // SECURITY FIX: use the HttpOnly cookie-backed verify endpoint instead of localStorage tokens.
+        const token = localStorage.getItem('authToken');
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // SECURITY FIX: use HttpOnly cookies with a dynamic fallback to Bearer tokens in localStorage
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          headers,
           credentials: 'include',
         });
         const data = await response.json().catch(() => null);
@@ -112,6 +119,10 @@ export default function Login({ mode = 'owner' }: LoginProps) {
 
       if (!data) {
         throw new Error('Invalid login response from server');
+      }
+
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
       }
 
       if (isAdminMode) {

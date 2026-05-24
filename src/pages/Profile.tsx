@@ -36,16 +36,22 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      // SECURITY FIX: use cookie-based auth for owner profile requests.
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // SECURITY FIX: use cookie-based auth for owner profile requests with a fallback Bearer token.
       const response = await fetch(`${API_BASE_URL}/owner/profile`, {
-        headers: {
-        },
+        headers,
         credentials: 'include',
       });
 
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('ownerUser');
+          localStorage.removeItem('authToken');
           navigate('/login');
           return;
         }

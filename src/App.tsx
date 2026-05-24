@@ -64,7 +64,14 @@ function AppRoutes() {
       setAuthStatus('loading');
 
       try {
+        const token = localStorage.getItem('authToken');
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          headers,
           credentials: 'include',
         });
         const data = await response.json().catch(() => null);
