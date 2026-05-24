@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Loader, Lock, Mail, Shield, Zap } from 'lucide-react';
-
-import { API_BASE_URL } from '../services/api';
+import api, { API_BASE_URL } from '../services/api';
 
 type LoginMode = 'owner' | 'admin';
 
@@ -10,25 +9,16 @@ interface LoginProps {
   mode?: LoginMode;
 }
 
-async function parseJsonSafe(response: Response): Promise<any | null> {
-  const raw = await response.text();
-  if (!raw) return null;
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
 export default function Login({ mode = 'owner' }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
   const navigate = useNavigate();
   const isAdminMode = mode === 'admin';
 
+  // Check for an active session on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -40,7 +30,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        // SECURITY FIX: use HttpOnly cookies with a dynamic fallback to Bearer tokens in localStorage
+        // Validate HttpOnly cookies with dynamic fallback to Bearer tokens in localStorage
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {
           headers,
           credentials: 'include',
@@ -53,7 +43,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
           }
         }
       } catch {
-        // Ignore verification errors and show the login form.
+        // Ignore verification errors and display the login form.
       }
     };
 
@@ -64,67 +54,29 @@ export default function Login({ mode = 'owner' }: LoginProps) {
     };
   }, [isAdminMode, navigate]);
 
+  // Handle Form Submission
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-          const path = isAdminMode ? '/auth/admin/login' : '/auth/owner/login';
-      const endpoints = Array.from(new Set([
-        `${API_BASE_URL}${path}`,
-        `/api${path}`,
-      ]));
-
-      let response: Response | null = null;
-      let data: any = null;
-      let lastNetworkError: Error | null = null;
-
-      for (const endpoint of endpoints) {
-        try {
-          const currentResponse = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({ email, password }),
-          });
-
-          const currentData = await parseJsonSafe(currentResponse);
-
-          if (!currentResponse.ok) {
-            if (currentResponse.status >= 500 && endpoint !== endpoints[endpoints.length - 1]) {
-              continue;
-            }
-
-            throw new Error(currentData?.error || currentData?.message || `Login failed (${currentResponse.status})`);
-          }
-
-          response = currentResponse;
-          data = currentData;
-          break;
-        } catch (err) {
-          if (err instanceof TypeError) {
-            lastNetworkError = err;
-            continue;
-          }
-          throw err;
-        }
-      }
-
-      if (!response) {
-        throw lastNetworkError || new Error('Failed to fetch');
-      }
+      const path = isAdminMode ? '/auth/admin/login' : '/auth/owner/login';
+      
+      // Make a clean, credential-enabled request using Axios
+      const response = await api.post(path, { email, password });
+      const data = response.data;
 
       if (!data) {
         throw new Error('Invalid login response from server');
       }
 
+      // Save Bearer token fallback for browsers blocking third-party cookies
       if (data.token) {
         localStorage.setItem('authToken', data.token);
       }
 
+      // Route based on role
       if (isAdminMode) {
         localStorage.setItem('adminUser', JSON.stringify(data.admin));
         localStorage.removeItem('ownerUser');
@@ -134,9 +86,17 @@ export default function Login({ mode = 'owner' }: LoginProps) {
         localStorage.removeItem('adminUser');
         navigate('/owner/dashboard');
       }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message || 'Login failed. Please check your credentials.');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Extract comprehensive error messages from Axios response
+      const errorMessage =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Login failed. Please check your credentials.';
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -144,14 +104,22 @@ export default function Login({ mode = 'owner' }: LoginProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Premium Background Ambient Glows */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-200/40 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-lime-200/40 rounded-full blur-[120px]"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10">
+        {/* Header Logo & Titles */}
         <div className="text-center mb-8">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl ${isAdminMode ? 'bg-gradient-to-br from-slate-700 to-slate-900 shadow-slate-700/20' : 'bg-gradient-to-br from-primary-400 to-lime-500 shadow-primary-500/20'}`}>
+          <div
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl ${
+              isAdminMode
+                ? 'bg-gradient-to-br from-slate-700 to-slate-900 shadow-slate-700/20'
+                : 'bg-gradient-to-br from-primary-400 to-lime-500 shadow-primary-500/20'
+            }`}
+          >
             {isAdminMode ? <Shield className="w-8 h-8 text-white" /> : <Zap className="w-8 h-8 text-white" />}
           </div>
           <h1 className="text-3xl font-bold text-slate-800 mb-2">{isAdminMode ? 'Admin Access' : 'Welcome Back'}</h1>
@@ -160,6 +128,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
           </p>
         </div>
 
+        {/* Card Component */}
         <div className="glass-card p-8 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl">
           {isAdminMode ? (
             <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -167,9 +136,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
             </div>
           ) : (
             <div className="mb-6">
-              <p className="text-sm text-slate-500 text-center">
-                Station owner sign-in
-              </p>
+              <p className="text-sm text-slate-500 text-center">Station owner sign-in</p>
             </div>
           )}
 
@@ -180,6 +147,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
           )}
 
           <form onSubmit={handleLogin} className="space-y-6" noValidate autoComplete="on">
+            {/* Email Field */}
             <div className="space-y-2">
               <label htmlFor="loginEmail" className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
               <div className="relative group">
@@ -200,6 +168,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
               </div>
             </div>
 
+            {/* Password Field */}
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
                 <label htmlFor="loginPassword" className="text-sm font-medium text-slate-600">Password</label>
@@ -222,10 +191,16 @@ export default function Login({ mode = 'owner' }: LoginProps) {
               </div>
             </div>
 
+            {/* Form Actions (Only for Owners) */}
             {!isAdminMode && (
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input id="rememberMe" name="rememberMe" type="checkbox" className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0" />
+                  <input
+                    id="rememberMe"
+                    name="rememberMe"
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-slate-300 bg-slate-50 text-primary-500 focus:ring-primary-500 focus:ring-offset-0"
+                  />
                   <span className="text-slate-500">Remember me</span>
                 </label>
                 <button
@@ -241,10 +216,15 @@ export default function Login({ mode = 'owner' }: LoginProps) {
               </div>
             )}
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className={`w-full text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 group ${isAdminMode ? 'bg-gradient-to-r from-slate-800 to-slate-900 shadow-slate-800/20 hover:shadow-slate-800/30' : 'bg-gradient-to-r from-primary-500 to-lime-500 shadow-primary-500/25 hover:shadow-primary-500/40'}`}
+              className={`w-full text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 group ${
+                isAdminMode
+                  ? 'bg-gradient-to-r from-slate-800 to-slate-900 shadow-slate-700/20 hover:shadow-slate-700/30'
+                  : 'bg-gradient-to-r from-primary-500 to-lime-500 shadow-primary-500/25 hover:shadow-primary-500/40'
+              }`}
             >
               {loading ? (
                 <Loader className="w-5 h-5 animate-spin" />
@@ -257,6 +237,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
             </button>
           </form>
 
+          {/* Footer Action */}
           <div className="mt-6 text-center">
             {isAdminMode ? (
               <button

@@ -104,11 +104,21 @@ function AppRoutes() {
       return <LoadingScreen />;
     }
 
+    // Timing Race Fix: If authToken is present but status hasn't transitioned to loading yet, show loading rather than redirecting
+    if (authRole === null && localStorage.getItem('authToken')) {
+      return <LoadingScreen />;
+    }
+
     return authRole === 'admin' ? <>{children}</> : <Navigate to="/admin/login" replace />;
   }
 
   function OwnerRoute({ children }: { children: React.ReactNode }) {
     if (authStatus === 'loading') {
+      return <LoadingScreen />;
+    }
+
+    // Timing Race Fix: If authToken is present but status hasn't transitioned to loading yet, show loading rather than redirecting
+    if (authRole === null && localStorage.getItem('authToken')) {
       return <LoadingScreen />;
     }
 
