@@ -179,7 +179,7 @@ export default function Login({ mode = 'owner' }: LoginProps) {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-6" noValidate>
+          <form onSubmit={handleLogin} className="space-y-6" noValidate autoComplete="on">
             <div className="space-y-2">
               <label htmlFor="loginEmail" className="text-sm font-medium text-slate-600 ml-1">Email Address</label>
               <div className="relative group">
