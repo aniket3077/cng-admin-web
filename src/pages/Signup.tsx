@@ -51,21 +51,44 @@ export default function Signup() {
     }
   };
 
+  // Parse coordinates in either DMS format or Decimal format
+  const parseCoordinates = (value: string): { lat: number; lng: number } | null => {
+    if (!value) return null;
+    
+    // Check if it's DMS format
+    if (value.includes('°')) {
+      return parseDMS(value);
+    }
+    
+    // Check if it's decimal format: "lat, lng" or "lat lng"
+    try {
+      const parts = value.split(/[,\s]+/).map(p => p.trim()).filter(Boolean);
+      if (parts.length === 2) {
+        const lat = parseFloat(parts[0]);
+        const lng = parseFloat(parts[1]);
+        if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          return { lat, lng };
+        }
+      }
+    } catch (e) {
+      console.error('Decimal coordinates parsing error:', e);
+    }
+    return null;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
-    // Auto-detect and convert DMS format for coordinates field
-    if (name === 'coordinates' && value.includes('°')) {
-      const parsed = parseDMS(value);
-      if (parsed) {
-        setFormData({
-          ...formData,
-          coordinates: value,
-          lat: parsed.lat,
-          lng: parsed.lng,
-        });
-        return;
-      }
+    // Auto-detect and convert coordinates field
+    if (name === 'coordinates') {
+      const parsed = parseCoordinates(value);
+      setFormData({
+        ...formData,
+        coordinates: value,
+        lat: parsed ? parsed.lat : null,
+        lng: parsed ? parsed.lng : null,
+      });
+      return;
     }
 
     setFormData({
@@ -90,8 +113,23 @@ export default function Signup() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+
+    if (!/[A-Z]/.test(formData.password)) {
+      setError('Password must contain at least one uppercase letter');
+      return;
+    }
+
+    if (!/[a-z]/.test(formData.password)) {
+      setError('Password must contain at least one lowercase letter');
+      return;
+    }
+
+    if (!/[0-9]/.test(formData.password)) {
+      setError('Password must contain at least one number');
       return;
     }
 
@@ -115,15 +153,15 @@ export default function Signup() {
           address: formData.address,
           city: formData.city,
           state: formData.state,
-          lat: formData.lat,
-          lng: formData.lng,
+          lat: formData.lat !== null ? formData.lat : undefined,
+          lng: formData.lng !== null ? formData.lng : undefined,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.details?.[0]?.message || 'Registration failed');
+        throw new Error(data.details?.[0]?.message || data.error || 'Registration failed');
       }
 
       setSuccess('Registration successful! Your account has been created.');
@@ -309,7 +347,7 @@ export default function Signup() {
                           placeholder="25.2345, 75.1234 OR 19°51'00.2&quot;N 75°19'51.5&quot;E"
                         />
                       </div>
-                      {formData.lat && (
+                      {formData.lat !== null && (
                         <p className="text-xs text-emerald-600 ml-1 font-medium flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
                           Parsed: {formData.lat.toFixed(6)}, {formData.lng?.toFixed(6)}
@@ -346,6 +384,9 @@ export default function Signup() {
                       placeholder="Confirm Password"
                     />
                   </div>
+                  <p className="text-xs text-slate-500 ml-1">
+                    Password must be at least 8 characters and include uppercase, lowercase, and numeric characters.
+                  </p>
                 </div>
 
                 {/* Terms and Conditions Checkbox */}

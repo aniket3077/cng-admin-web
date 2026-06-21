@@ -255,8 +255,8 @@ export default function Support() {
                       </div>
                     </td>
                     <td className="p-6">
-                      <p className="text-slate-700 font-medium">{ticket.owner?.name || 'Guest / Unlinked'}</p>
-                      <p className="text-xs text-slate-500">{ticket.owner?.email || 'No email available'}</p>
+                      <p className="text-slate-700 font-medium">{ticket.owner?.name || ticket.user?.name || 'Guest / Unlinked'}</p>
+                      <p className="text-xs text-slate-500">{ticket.owner?.email || ticket.user?.email || 'No email available'}</p>
                     </td>
                     <td className="p-6">
                       <div className="flex flex-col gap-2 items-start">
@@ -336,7 +336,7 @@ export default function Support() {
                     <p><span className="font-medium text-slate-800">Category:</span> {selectedTicket.category}</p>
                     <p><span className="font-medium text-slate-800">Created:</span> {new Date(selectedTicket.createdAt).toLocaleString()}</p>
                     <p><span className="font-medium text-slate-800">Station:</span> {selectedTicket.station?.name || 'Not linked'}</p>
-                    <p><span className="font-medium text-slate-800">Owner:</span> {selectedTicket.owner?.name || 'Not linked'}</p>
+                    <p><span className="font-medium text-slate-800">Owner/User:</span> {selectedTicket.owner?.name || selectedTicket.user?.name || 'Not linked'}</p>
                   </div>
                 </div>
 

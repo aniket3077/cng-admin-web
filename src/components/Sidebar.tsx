@@ -7,7 +7,8 @@ import {
   MessageSquare,
   PlusCircle,
   User,
-  LogOut
+  LogOut,
+  Banknote
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -76,6 +77,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
             <NavItem to="/users" icon={User} label="Users" />
             <NavItem to="/support" icon={MessageSquare} label="Support" />
             <NavItem to="/subscriptions" icon={CreditCard} label="Subscriptions" />
+            <NavItem to="/payouts" icon={Banknote} label="Payouts" />
           </>
         )}
       </nav>

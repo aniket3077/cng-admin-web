@@ -11,9 +11,8 @@ npm run dev
 
 Visit: http://localhost:3001
 
-## Default Login
-- Email: `admin@cngbharat.com`
-- Password: `Admin@123`
+## Admin Login
+Create an admin with the backend `create-admin` script and store the password in a secret manager or local `.env` file.
 
 ## Features
 - 🔐 JWT Authentication

@@ -23,12 +23,13 @@ export default function Login({ mode = 'owner' }: LoginProps) {
     let cancelled = false;
 
     const verifySession = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
       try {
-        const token = localStorage.getItem('authToken');
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
+        const headers: Record<string, string> = {
+          'Authorization': `Bearer ${token}`
+        };
 
         // Validate HttpOnly cookies with dynamic fallback to Bearer tokens in localStorage
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {

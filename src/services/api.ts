@@ -161,6 +161,12 @@ export interface SupportTicket {
     name: string;
     email: string;
   };
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
   station?: {
     id: string;
     name: string;
@@ -212,6 +218,45 @@ export interface TicketsResponse {
     page: number;
     limit: number;
     total: number;
+    totalPages: number;
+  };
+}
+
+export interface Withdrawal {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userMobile: string;
+  amount: number;
+  paymentMethod: 'upi' | 'bank_transfer';
+  upiId?: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
+  ifscCode?: string | null;
+  status: 'pending' | 'processing' | 'paid' | 'rejected';
+  adminRemarks?: string | null;
+  requestedAt: string;
+  approvedAt?: string | null;
+  paidAt?: string | null;
+  rejectedAt?: string | null;
+  payoutDeadline: string;
+  isOverdue: boolean;
+}
+
+export interface PayoutsResponse {
+  withdrawals: Withdrawal[];
+  stats: {
+    totalPendingAmount: number;
+    pendingRequests: number;
+    completedPayouts: number;
+    rejectedRequests: number;
+    overdueRequests: number;
+  };
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
     totalPages: number;
   };
 }
@@ -327,15 +372,30 @@ export const adminApi = {
     return unwrapApiData(response.data);
   },
 
-    // SECURITY FIX: this Google Maps key is exposed in the client bundle and must be referrer-restricted.
+    // SECURITY FIX: Geocoding is now proxied through the backend to avoid exposing the Google Maps API key on the client.
     geocode: async (address: string) => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      throw new Error('Google Maps API key is not configured');
-    }
-    const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`
-    );
+    const response = await api.get(`/places/geocode?address=${encodeURIComponent(address)}`);
+    return response.data;
+  },
+
+  // Payout Management
+  getPayouts: async (page = 1, limit = 20, filters?: { status?: string; search?: string; overdue?: boolean }) => {
+    const params: any = { page, limit, ...filters };
+    const response = await api.get<PayoutsResponse>('/admin/payouts', { params });
+    return response.data;
+  },
+
+  updatePayout: async (id: string, data: { status: 'processing' | 'paid' | 'rejected'; adminRemarks?: string | null }) => {
+    const response = await api.put(`/admin/payouts/${id}`, data);
+    return response.data;
+  },
+
+  exportPayouts: async (filters?: { status?: string; search?: string; overdue?: boolean }) => {
+    const params: any = { ...filters };
+    const response = await api.get('/admin/payouts/export', {
+      params,
+      responseType: 'blob',
+    });
     return response.data;
   },
 };

@@ -15,6 +15,7 @@ import AddStation from './pages/AddStation';
 import Profile from './pages/Profile';
 import Users from './pages/Users';
 import Support from './pages/Support';
+import PayoutManagement from './pages/PayoutManagement';
 import LandingPage from './pages/LandingPage';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
@@ -49,6 +50,7 @@ function AppRoutes() {
     location.pathname.startsWith('/subscriptions') ||
     location.pathname.startsWith('/users') ||
     location.pathname.startsWith('/support') ||
+    location.pathname.startsWith('/payouts') ||
     location.pathname.startsWith('/owner/');
 
   useEffect(() => {
@@ -61,14 +63,21 @@ function AppRoutes() {
         return;
       }
 
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        if (!cancelled) {
+          setAuthRole(null);
+          setAuthStatus('ready');
+        }
+        return;
+      }
+
       setAuthStatus('loading');
 
       try {
-        const token = localStorage.getItem('authToken');
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
+        const headers: Record<string, string> = {
+          'Authorization': `Bearer ${token}`
+        };
 
         const response = await fetch(`${API_BASE_URL}/auth/verify`, {
           headers,
@@ -148,6 +157,7 @@ function AppRoutes() {
       <Route path="/subscriptions" element={<PrivateRoute><Layout><AdminSubscriptions /></Layout></PrivateRoute>} />
       <Route path="/users" element={<PrivateRoute><Layout><Users /></Layout></PrivateRoute>} />
       <Route path="/support" element={<PrivateRoute><Layout><Support /></Layout></PrivateRoute>} />
+      <Route path="/payouts" element={<PrivateRoute><Layout><PayoutManagement /></Layout></PrivateRoute>} />
 
       <Route path="/owner/dashboard" element={<OwnerRoute><Layout><OwnerDashboard /></Layout></OwnerRoute>} />
       <Route path="/owner/stations" element={<OwnerRoute><Layout><OwnerStations /></Layout></OwnerRoute>} />
