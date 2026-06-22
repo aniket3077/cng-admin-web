@@ -432,6 +432,37 @@ export const ownerApi = {
       localStorage.removeItem('authToken');
     }
   },
+
+  initiateSubscription: async (planId: 'basic' | 'standard' | 'premium' | 'trial') => {
+    const response = await api.post('/owner/subscription/initiate', { planId });
+    return response.data as {
+      orderId: string;
+      amount: number;
+      currency: string;
+      ownerName: string;
+      ownerEmail: string;
+      ownerPhone: string;
+      keyId: string;
+    };
+  },
+
+  completeSubscription: async (paymentData: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    planId: string;
+  }) => {
+    const response = await api.post('/owner/subscription/complete', paymentData);
+    return response.data as {
+      success: boolean;
+      message: string;
+      subscription: {
+        plan: string;
+        planName: string;
+        expiresAt?: string;
+      };
+    };
+  },
 };
 
 export default api;
