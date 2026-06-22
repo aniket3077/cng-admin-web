@@ -68,7 +68,6 @@ export default function Sidebar({ onLogout }: SidebarProps) {
             <NavItem to="/owner/stations" icon={MapPin} label="My Stations" />
             <NavItem to="/owner/add-station" icon={PlusCircle} label="Add Station" />
             <NavItem to="/owner/profile" icon={User} label="Profile" />
-            <NavItem to="/owner/subscription" icon={CreditCard} label="Subscription" />
           </>
         ) : (
           <>

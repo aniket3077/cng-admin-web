@@ -25,7 +25,6 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
-import Subscription from './pages/Subscription';
 
 type AuthRole = 'admin' | 'owner' | null;
 
@@ -164,7 +163,6 @@ function AppRoutes() {
       <Route path="/owner/stations" element={<OwnerRoute><Layout><OwnerStations /></Layout></OwnerRoute>} />
       <Route path="/owner/profile" element={<OwnerRoute><Layout><Profile /></Layout></OwnerRoute>} />
       <Route path="/owner/add-station" element={<OwnerRoute><Layout><AddStation /></Layout></OwnerRoute>} />
-      <Route path="/owner/subscription" element={<OwnerRoute><Layout><Subscription /></Layout></OwnerRoute>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
