@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.aniket3077.cngbharatmobile",
+      "sha256_cert_fingerprints": [
+        "YOUR_GOOGLE_PLAY_CONSOLE_SHA256_FINGERPRINT_HERE"
+      ]
+    }
+  }
+]
